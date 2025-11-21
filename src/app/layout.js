@@ -1,4 +1,6 @@
 import './globals.css'
+import { getBaseUrl } from '@/lib/seo-utils'
+import DynamicSEO from '@/components/DynamicSEO'
 
 export const metadata = {
   title: {
@@ -10,14 +12,15 @@ export const metadata = {
   authors: [{ name: 'TVS Event Center' }],
   creator: 'TVS Event Center',
   publisher: 'TVS Event Center',
-  metadataBase: new URL('https://tv-even-center.vercel.app'),
-  alternates: {
-    canonical: 'https://tv-even-center.vercel.app',
-  },
+  metadataBase: new URL(getBaseUrl()),
+  // Remove static canonical - will be handled dynamically
+  // alternates: {
+  //   canonical: 'https://tv-even-center.vercel.app',
+  // },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://tv-even-center.vercel.app',
+    // URL will be handled dynamically per page
     title: 'TVS Event Center - Celebrate Life\'s Best Moments',
     description: 'TVS Event Center is a luxurious event venue perfect for weddings, corporate events, birthdays, and celebrations. Located in Rosharon, TX. ',
     siteName: 'TVS Event Center',
@@ -49,6 +52,7 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className="font-body antialiased">
+        <DynamicSEO />
         {children}
       </body>
     </html>
