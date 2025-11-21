@@ -3,6 +3,7 @@
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SectionHeading from '@/components/SectionHeading'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Award, Users, Calendar, MapPin, Star, Heart, Crown, Clock, Shield, Sparkles } from 'lucide-react'
@@ -11,6 +12,12 @@ import { companyInfo } from '@/data/testimonials'
 export default function AboutPage() {
   return (
     <>
+      <SEOHead 
+        title="About TVS Event Center"
+        description="Learn about TVS Event Center - our story, mission, and commitment to creating extraordinary events. Luxury venue in Rosharon, TX with exceptional service."
+        canonical="/about"
+        keywords="about TVS Event Center, event venue story, luxury event center, Rosharon TX venue"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}

@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SectionHeading from '@/components/SectionHeading'
 import CardGrid from '@/components/CardGrid'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,6 +21,12 @@ export default function ServicesPage() {
 
   return (
     <>
+      <SEOHead 
+        title="Event Services"
+        description="Comprehensive event services at TVS Event Center including weddings, corporate events, birthday parties, and special celebrations. Professional catering and DJ services available."
+        canonical="/services"
+        keywords="event services, wedding services, corporate event planning, birthday party services, catering services, DJ services, event planning"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}

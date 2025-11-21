@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BookingCalendar from '@/components/BookingCalendar'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Calendar, Clock, Users, DollarSign, CheckCircle } from 'lucide-react'
@@ -78,6 +79,12 @@ export default function BookingPage() {
 
   return (
     <>
+      <SEOHead 
+        title="Book Your Event"
+        description="Book your event at TVS Event Center. Check availability, view pricing, and reserve your date for weddings, corporate events, and celebrations in Rosharon, TX."
+        canonical="/booking"
+        keywords="book event venue, reserve venue date, event booking, wedding venue booking, corporate event reservation, TVS Event Center booking"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}

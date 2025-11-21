@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SectionHeading from '@/components/SectionHeading'
 import ContactForm from '@/components/ContactForm'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
@@ -12,6 +13,12 @@ import { contactInfo } from '@/data/testimonials'
 export default function ContactPage() {
   return (
     <>
+      <SEOHead 
+        title="Contact Us"
+        description="Contact TVS Event Center in Rosharon, TX. Get in touch for event bookings, venue inquiries, and more information about our luxury event space."
+        canonical="/contact"
+        keywords="contact TVS Event Center, event venue booking, Rosharon TX venue contact, event inquiry, venue rental"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}

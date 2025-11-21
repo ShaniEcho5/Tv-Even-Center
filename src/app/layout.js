@@ -10,10 +10,14 @@ export const metadata = {
   authors: [{ name: 'TVS Event Center' }],
   creator: 'TVS Event Center',
   publisher: 'TVS Event Center',
+  metadataBase: new URL('https://tv-even-center.vercel.app'),
+  alternates: {
+    canonical: 'https://tv-even-center.vercel.app',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://tvseventcenter.com',
+    url: 'https://tv-even-center.vercel.app',
     title: 'TVS Event Center - Celebrate Life\'s Best Moments',
     description: 'TVS Event Center is a luxurious event venue perfect for weddings, corporate events, birthdays, and celebrations. Located in Rosharon, TX. ',
     siteName: 'TVS Event Center',

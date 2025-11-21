@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import BlogHero from '@/components/BlogHero'
 import BlogCard from '@/components/BlogCard'
 import SectionHeading from '@/components/SectionHeading'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import { Search, Filter, Grid, List } from 'lucide-react'
 export default function BlogPage() {
@@ -66,6 +67,12 @@ export default function BlogPage() {
 
   return (
     <>
+      <SEOHead 
+        title="Event Planning Blog"
+        description="Expert event planning tips, wedding advice, and celebration ideas from TVS Event Center. Learn from our experienced team about creating memorable events."
+        canonical="/blog"
+        keywords="event planning blog, wedding tips, corporate event advice, party planning, event ideas, celebration planning"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}

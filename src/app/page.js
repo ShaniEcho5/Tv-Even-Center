@@ -6,6 +6,7 @@ import CardGrid from '@/components/CardGrid'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import DiamondServicesSection from '@/components/DiamondServicesSection'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -24,6 +25,12 @@ export default function HomePage() {
 
   return (
     <>
+      <SEOHead 
+        title="TVS Event Center - Celebrate Life's Best Moments"
+        description="Premier event venue in Rosharon, TX. Perfect for weddings, corporate events, birthdays & celebrations. State-of-the-art facilities, catering & DJ services."
+        canonical="/"
+        keywords="event venue, wedding hall, corporate events, birthday parties, luxury venue, event center, Rosharon TX, catering, DJ services"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}

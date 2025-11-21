@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SectionHeading from '@/components/SectionHeading'
 import Gallery from '@/components/Gallery'
+import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { galleryCategories } from '@/data/gallery'
@@ -65,6 +66,12 @@ export default function GalleryPage() {
 
   return (
     <>
+      <SEOHead 
+        title="Gallery - Event Photos"
+        description="Browse our stunning gallery of weddings, corporate events, and celebrations at TVS Event Center. See our beautiful venue and successful events in Rosharon, TX."
+        canonical="/gallery"
+        keywords="event gallery, wedding photos, corporate event photos, venue gallery, TVS Event Center photos"
+      />
       <Navbar />
       <main>
         {/* Hero Section */}
