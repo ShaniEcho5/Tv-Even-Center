@@ -1,4 +1,5 @@
 import { submitContactForm } from '@/lib/supabase'
+import { sendAdminNotification, sendCustomerConfirmation } from '@/lib/emailUtils'
 
 export async function POST(request) {
   try {
@@ -20,6 +21,28 @@ export async function POST(request) {
         { error: result.error },
         { status: 500 }
       )
+    }
+
+    // Send email notifications (don't fail the request if emails fail)
+    try {
+      // Send notification to admins
+      const adminEmailResult = await sendAdminNotification(formData)
+      if (adminEmailResult.success) {
+        console.log('Admin notification email sent successfully')
+      } else {
+        console.error('Failed to send admin notification email:', adminEmailResult.error)
+      }
+
+      // Optionally send confirmation to customer
+      const customerEmailResult = await sendCustomerConfirmation(formData)
+      if (customerEmailResult.success) {
+        console.log('Customer confirmation email sent successfully')
+      } else {
+        console.error('Failed to send customer confirmation email:', customerEmailResult.error)
+      }
+    } catch (emailError) {
+      console.error('Email notification error:', emailError)
+      // Continue with success response even if emails fail
     }
 
     return Response.json(
