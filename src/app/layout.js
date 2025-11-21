@@ -1,5 +1,6 @@
 import './globals.css'
 import { getBaseUrl } from '@/lib/seo-utils'
+import { getFaviconConfig } from '@/lib/favicon-utils'
 import DynamicSEO from '@/components/DynamicSEO'
 
 export const metadata = {
@@ -42,17 +43,7 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: [
-      { url: '/TVS EVENT.png', sizes: '32x32' },
-      { url: '/TVS EVENT.png', sizes: '16x16', type: 'image/png' },
-      { url: '/TVS EVENT.png', sizes: '32x32', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/TVS EVENT.png', sizes: '180x180', type: 'image/png' },
-    ],
-    shortcut: '/tvs event.png'
-  },
+  icons: getFaviconConfig(),
   manifest: '/site.webmanifest',
 }
 

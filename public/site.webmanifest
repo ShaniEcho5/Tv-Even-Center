@@ -11,29 +11,29 @@
   "lang": "en-US",
   "icons": [
     {
-      "src": "/TVS EVENT.png",
+      "src": "/tvs-event-fav.png",
       "sizes": "16x16",
       "type": "image/png"
     },
     {
-      "src": "/TVS EVENT.png", 
+      "src": "/tvs-event-fav.png", 
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/TVS EVENT.png",
+      "src": "/tvs-event-fav.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/TVS EVENT.png",
+      "src": "/tvs-event-fav.png",
       "sizes": "512x512", 
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/TVS EVENT.png",
+      "src": "/tvs-event-fav.png",
       "sizes": "180x180",
       "type": "image/png"
     }
@@ -47,7 +47,7 @@
       "url": "/booking",
       "icons": [
         {
-          "src": "/TVS EVENT.png",
+          "src": "/tvs-event-fav.png",
           "sizes": "32x32"
         }
       ]
@@ -59,7 +59,7 @@
       "url": "/gallery",
       "icons": [
         {
-          "src": "/TVS EVENT.png",
+          "src": "/tvs-event-fav.png",
           "sizes": "32x32"
         }
       ]
@@ -71,7 +71,7 @@
       "url": "/contact",
       "icons": [
         {
-          "src": "/TVS EVENT.png",
+          "src": "/tvs-event-fav.png",
           "sizes": "32x32"
         }
       ]
