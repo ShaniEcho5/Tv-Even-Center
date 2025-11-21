@@ -134,8 +134,8 @@ export async function DELETE(request, { params }) {
     // Delete from storage
     try {
       await supabase.storage
-        .from('uploads')
-        .remove([`gallery/${image.fileName}`])
+        .from('gallery-images')
+        .remove([image.fileName])
     } catch (storageError) {
       console.warn('Failed to delete from storage:', image.fileName, storageError)
     }

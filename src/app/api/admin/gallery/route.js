@@ -58,6 +58,18 @@ export async function GET(request) {
 // POST - Upload new gallery image
 export async function POST(request) {
   try {
+    // Check environment variables first
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+      console.error('Missing Supabase environment variables')
+      return NextResponse.json(
+        { 
+          error: 'Server configuration error',
+          details: 'Missing SUPABASE_SERVICE_KEY or SUPABASE_URL'
+        },
+        { status: 500 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file')
     const title = formData.get('title')
@@ -65,6 +77,15 @@ export async function POST(request) {
     const description = formData.get('description') || ''
     const category = formData.get('category') || 'general'
     const venue = formData.get('venue') || ''
+
+    console.log('Gallery upload attempt:', { 
+      hasFile: !!file, 
+      title, 
+      alt, 
+      category,
+      fileSize: file?.size,
+      fileType: file?.type
+    })
 
     if (!file || !title || !alt) {
       return NextResponse.json(
@@ -101,10 +122,31 @@ export async function POST(request) {
     const extension = originalName.split('.').pop().toLowerCase()
     const filename = `gallery-${timestamp}.${extension}`
 
+    // Check if gallery-images bucket exists, create if not
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+    const galleryBucket = buckets?.find(bucket => bucket.name === 'gallery-images')
+
+    if (!galleryBucket) {
+      console.log('Creating gallery-images bucket...')
+      const { error: bucketError } = await supabase.storage.createBucket('gallery-images', {
+        public: true,
+        allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+        fileSizeLimit: 2097152 // 2MB limit for gallery images
+      })
+
+      if (bucketError) {
+        console.error('Failed to create gallery bucket:', bucketError)
+        return NextResponse.json({ 
+          error: 'Storage bucket creation failed', 
+          details: bucketError.message 
+        }, { status: 500 })
+      }
+    }
+
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('uploads')
-      .upload(`gallery/${filename}`, buffer, {
+      .from('gallery-images')
+      .upload(filename, buffer, {
         contentType: file.type,
         cacheControl: '3600',
         upsert: false
@@ -113,15 +155,19 @@ export async function POST(request) {
     if (uploadError) {
       console.error('Supabase upload error:', uploadError)
       return NextResponse.json(
-        { error: 'Failed to upload image' },
+        { 
+          error: 'Failed to upload image',
+          details: uploadError.message,
+          code: uploadError.error || 'STORAGE_ERROR'
+        },
         { status: 500 }
       )
     }
 
     // Get public URL
     const { data: publicUrlData } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(`gallery/${filename}`)
+      .from('gallery-images')
+      .getPublicUrl(filename)
 
     if (!publicUrlData?.publicUrl) {
       return NextResponse.json(
@@ -154,7 +200,11 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error creating gallery image:', error)
     return NextResponse.json(
-      { error: 'Failed to create gallery image' },
+      { 
+        error: 'Failed to create gallery image',
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     )
   }
@@ -188,8 +238,8 @@ export async function DELETE(request) {
     for (const image of images) {
       try {
         await supabase.storage
-          .from('uploads')
-          .remove([`gallery/${image.fileName}`])
+          .from('gallery-images')
+          .remove([image.fileName])
       } catch (storageError) {
         console.warn('Failed to delete from storage:', image.fileName, storageError)
       }
