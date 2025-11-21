@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 
-const prisma = new PrismaClient()
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 // GET - Fetch gallery images for public gallery page
 export async function GET(request) {
@@ -11,36 +15,32 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where = {
-      status: 'active' // Only show active images to public
-    }
+    // Build query for Supabase
+    let query = supabase
+      .from('gallery_images')
+      .select('id, title, alt, imageUrl, category, venue, featured, createdAt')
+      .eq('status', 'active')
+      .order('featured', { ascending: false })
+      .order('createdAt', { ascending: false })
+      .range(offset, offset + limit - 1)
 
+    // Add category filter if specified
     if (category && category !== 'all') {
-      where.category = category
+      query = query.eq('category', category)
     }
 
-    const images = await prisma.galleryImage.findMany({
-      where,
-      select: {
-        id: true,
-        title: true,
-        alt: true,
-        imageUrl: true,
-        category: true,
-        venue: true,
-        featured: true,
-        createdAt: true
-      },
-      orderBy: [
-        { featured: 'desc' }, // Featured images first
-        { createdAt: 'desc' }
-      ],
-      take: limit,
-      skip: offset
-    })
+    const { data: images, error, count } = await query
+
+    if (error) {
+      console.error('Supabase query error:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch gallery images' },
+        { status: 500 }
+      )
+    }
 
     // Transform to match the existing gallery data structure
-    const transformedImages = images.map(image => ({
+    const transformedImages = (images || []).map(image => ({
       id: image.id,
       src: image.imageUrl,
       alt: image.alt,
@@ -50,15 +50,19 @@ export async function GET(request) {
       featured: image.featured
     }))
 
-    const total = await prisma.galleryImage.count({ where })
+    // Get total count for pagination
+    const { count: totalCount } = await supabase
+      .from('gallery_images')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active')
 
     return NextResponse.json({
       images: transformedImages,
       pagination: {
-        total,
+        total: totalCount || 0,
         limit,
         offset,
-        hasMore: (offset + limit) < total
+        hasMore: (offset + limit) < (totalCount || 0)
       }
     })
 
