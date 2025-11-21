@@ -62,3 +62,30 @@ model BlogTag {
   
   @@map("blog_tags")
 }
+
+model GalleryImage {
+  id          String   @id @default(cuid())
+  title       String
+  alt         String
+  description String?
+  imageUrl    String
+  category    String   @default("general")
+  venue       String?
+  fileSize    Int      // Size in bytes
+  fileName    String
+  mimeType    String
+  
+  // Image dimensions
+  width       Int?
+  height      Int?
+  
+  // Status and Publishing
+  status      String   @default("active") // active, archived
+  featured    Boolean  @default(false)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("gallery_images")
+}

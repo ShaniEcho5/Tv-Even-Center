@@ -1,14 +1,68 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SectionHeading from '@/components/SectionHeading'
 import Gallery from '@/components/Gallery'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { galleryImages, galleryCategories } from '@/data/gallery'
+import { galleryCategories } from '@/data/gallery'
 
 export default function GalleryPage() {
+  const [galleryImages, setGalleryImages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch gallery images from database
+  useEffect(() => {
+    const fetchGalleryImages = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/gallery')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch gallery images')
+        }
+        
+        const data = await response.json()
+        setGalleryImages(data.images)
+      } catch (err) {
+        console.error('Error fetching gallery images:', err)
+        setError(err.message)
+        // Fallback to static data if available
+        try {
+          const { galleryImages: staticImages } = await import('@/data/gallery')
+          setGalleryImages(staticImages)
+        } catch (importErr) {
+          console.error('Failed to load fallback images:', importErr)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGalleryImages()
+  }, [])
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main>
+          <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 z-0 bg-gray-200 animate-pulse" />
+            <div className="relative z-10 text-center text-gray-600 max-w-4xl mx-auto container-padding">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+              <p>Loading gallery...</p>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </>
+    )
+  }
+
   return (
     <>
       <Navbar />
@@ -55,11 +109,23 @@ export default function GalleryPage() {
             />
             
             <div className="mt-16">
-              <Gallery 
-                images={galleryImages} 
-                categories={galleryCategories}
-                showFilters={true}
-              />
+              {error && !galleryImages.length ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600 mb-4">Failed to load gallery images</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <Gallery 
+                  images={galleryImages} 
+                  categories={galleryCategories}
+                  showFilters={true}
+                />
+              )}
             </div>
           </div>
         </section>

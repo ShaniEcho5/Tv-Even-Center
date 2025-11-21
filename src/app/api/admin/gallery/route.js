@@ -1,0 +1,210 @@
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
+
+const prisma = new PrismaClient()
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
+
+// GET - Fetch gallery images
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+    const status = searchParams.get('status') || 'active'
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const offset = parseInt(searchParams.get('offset') || '0')
+
+    const where = {
+      status
+    }
+
+    if (category && category !== 'all') {
+      where.category = category
+    }
+
+    const images = await prisma.galleryImage.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset
+    })
+
+    const total = await prisma.galleryImage.count({ where })
+
+    return NextResponse.json({
+      images,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: (offset + limit) < total
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching gallery images:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch gallery images' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST - Upload new gallery image
+export async function POST(request) {
+  try {
+    const formData = await request.formData()
+    const file = formData.get('file')
+    const title = formData.get('title')
+    const alt = formData.get('alt')
+    const description = formData.get('description') || ''
+    const category = formData.get('category') || 'general'
+    const venue = formData.get('venue') || ''
+
+    if (!file || !title || !alt) {
+      return NextResponse.json(
+        { error: 'File, title, and alt text are required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Only JPG, PNG, and WebP images are allowed.' },
+        { status: 400 }
+      )
+    }
+
+    // Validate file size (2MB limit for gallery)
+    const maxSize = 2 * 1024 * 1024 // 2MB
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 2MB for gallery images.' },
+        { status: 400 }
+      )
+    }
+
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    // Create unique filename
+    const timestamp = Date.now()
+    const originalName = file.name
+    const extension = originalName.split('.').pop().toLowerCase()
+    const filename = `gallery-${timestamp}.${extension}`
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('uploads')
+      .upload(`gallery/${filename}`, buffer, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      return NextResponse.json(
+        { error: 'Failed to upload image' },
+        { status: 500 }
+      )
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('uploads')
+      .getPublicUrl(`gallery/${filename}`)
+
+    if (!publicUrlData?.publicUrl) {
+      return NextResponse.json(
+        { error: 'Failed to get image URL' },
+        { status: 500 }
+      )
+    }
+
+    // Save to database
+    const galleryImage = await prisma.galleryImage.create({
+      data: {
+        title,
+        alt,
+        description,
+        imageUrl: publicUrlData.publicUrl,
+        category,
+        venue,
+        fileSize: file.size,
+        fileName: filename,
+        mimeType: file.type,
+        status: 'active'
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      image: galleryImage
+    })
+
+  } catch (error) {
+    console.error('Error creating gallery image:', error)
+    return NextResponse.json(
+      { error: 'Failed to create gallery image' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE - Delete multiple images
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const ids = searchParams.get('ids')?.split(',') || []
+
+    if (ids.length === 0) {
+      return NextResponse.json(
+        { error: 'No image IDs provided' },
+        { status: 400 }
+      )
+    }
+
+    // Get images to delete (to clean up storage)
+    const images = await prisma.galleryImage.findMany({
+      where: { id: { in: ids } },
+      select: { fileName: true }
+    })
+
+    // Delete from database
+    const deleteResult = await prisma.galleryImage.deleteMany({
+      where: { id: { in: ids } }
+    })
+
+    // Delete from storage
+    for (const image of images) {
+      try {
+        await supabase.storage
+          .from('uploads')
+          .remove([`gallery/${image.fileName}`])
+      } catch (storageError) {
+        console.warn('Failed to delete from storage:', image.fileName, storageError)
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      deletedCount: deleteResult.count
+    })
+
+  } catch (error) {
+    console.error('Error deleting gallery images:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete gallery images' },
+      { status: 500 }
+    )
+  }
+}
