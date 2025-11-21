@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { createClient } from '@supabase/supabase-js'
-
-const prisma = new PrismaClient()
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -19,30 +16,35 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where = {
-      status
-    }
+    // Use Supabase client directly like blog API
+    let query = supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('status', status)
+      .order('createdAt', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (category && category !== 'all') {
-      where.category = category
+      query = query.eq('category', category)
     }
 
-    const images = await prisma.galleryImage.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset
-    })
+    const { data: images, error: fetchError, count } = await query
 
-    const total = await prisma.galleryImage.count({ where })
+    if (fetchError) {
+      console.error('Supabase fetch error:', fetchError)
+      return NextResponse.json(
+        { error: 'Failed to fetch gallery images', details: fetchError.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
-      images,
+      images: images || [],
       pagination: {
-        total,
+        total: count || images?.length || 0,
         limit,
         offset,
-        hasMore: (offset + limit) < total
+        hasMore: (offset + limit) < (count || 0)
       }
     })
 
@@ -176,30 +178,33 @@ export async function POST(request) {
       )
     }
 
-    // Save to database
-    let galleryImage
-    try {
-      galleryImage = await prisma.galleryImage.create({
-        data: {
-          title,
-          alt,
-          description,
-          imageUrl: publicUrlData.publicUrl,
-          category,
-          venue,
-          fileSize: file.size,
-          fileName: filename,
-          mimeType: file.type,
-          status: 'active'
-        }
+    // Save to database using Supabase client directly
+    const { data: galleryImage, error: insertError } = await supabase
+      .from('gallery_images')
+      .insert({
+        title,
+        alt,
+        description,
+        imageUrl: publicUrlData.publicUrl,
+        category,
+        venue,
+        fileSize: file.size,
+        fileName: filename,
+        mimeType: file.type,
+        status: 'active'
       })
-    } catch (dbError) {
-      console.error('Database create error:', dbError)
-      // If it's a schema issue, try to recreate the record with raw SQL
-      if (dbError.message.includes('relation') || dbError.message.includes('does not exist')) {
-        throw new Error('Gallery table not properly synced. Please contact administrator.')
-      }
-      throw dbError
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('Database insert error:', insertError)
+      return NextResponse.json(
+        { 
+          error: 'Failed to save gallery image to database',
+          details: insertError.message
+        },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
@@ -234,15 +239,32 @@ export async function DELETE(request) {
     }
 
     // Get images to delete (to clean up storage)
-    const images = await prisma.galleryImage.findMany({
-      where: { id: { in: ids } },
-      select: { fileName: true }
-    })
+    const { data: images, error: fetchError } = await supabase
+      .from('gallery_images')
+      .select('fileName')
+      .in('id', ids)
+
+    if (fetchError) {
+      console.error('Error fetching images for deletion:', fetchError)
+      return NextResponse.json(
+        { error: 'Failed to fetch images for deletion' },
+        { status: 500 }
+      )
+    }
 
     // Delete from database
-    const deleteResult = await prisma.galleryImage.deleteMany({
-      where: { id: { in: ids } }
-    })
+    const { error: deleteError, count } = await supabase
+      .from('gallery_images')
+      .delete()
+      .in('id', ids)
+
+    if (deleteError) {
+      console.error('Error deleting from database:', deleteError)
+      return NextResponse.json(
+        { error: 'Failed to delete images from database' },
+        { status: 500 }
+      )
+    }
 
     // Delete from storage
     for (const image of images) {
@@ -257,7 +279,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({
       success: true,
-      deletedCount: deleteResult.count
+      deletedCount: count || 0
     })
 
   } catch (error) {

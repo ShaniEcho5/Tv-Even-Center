@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { createClient } from '@supabase/supabase-js'
-
-const prisma = new PrismaClient()
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -15,11 +12,13 @@ export async function GET(request, { params }) {
   try {
     const { id } = params
 
-    const image = await prisma.galleryImage.findUnique({
-      where: { id }
-    })
+    const { data: image, error: fetchError } = await supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    if (!image) {
+    if (fetchError || !image) {
       return NextResponse.json(
         { error: 'Gallery image not found' },
         { status: 404 }
@@ -69,30 +68,45 @@ export async function PATCH(request, { params }) {
     }
 
     // Check if image exists
-    const existingImage = await prisma.galleryImage.findUnique({
-      where: { id }
-    })
+    const { data: existingImage, error: fetchError } = await supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    if (!existingImage) {
+    if (fetchError || !existingImage) {
       return NextResponse.json(
         { error: 'Gallery image not found' },
         { status: 404 }
       )
     }
 
+    // Prepare update data
+    const updateData = {}
+    if (title !== undefined) updateData.title = title.trim()
+    if (alt !== undefined) updateData.alt = alt.trim()
+    if (description !== undefined) updateData.description = description.trim()
+    if (category !== undefined) updateData.category = category
+    if (venue !== undefined) updateData.venue = venue.trim()
+    if (status !== undefined) updateData.status = status
+    if (featured !== undefined) updateData.featured = featured
+    updateData.updatedAt = new Date().toISOString()
+
     // Update the image
-    const updatedImage = await prisma.galleryImage.update({
-      where: { id },
-      data: {
-        ...(title !== undefined && { title: title.trim() }),
-        ...(alt !== undefined && { alt: alt.trim() }),
-        ...(description !== undefined && { description: description.trim() }),
-        ...(category !== undefined && { category }),
-        ...(venue !== undefined && { venue: venue.trim() }),
-        ...(status !== undefined && { status }),
-        ...(featured !== undefined && { featured })
-      }
-    })
+    const { data: updatedImage, error: updateError } = await supabase
+      .from('gallery_images')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error('Update error:', updateError)
+      return NextResponse.json(
+        { error: 'Failed to update gallery image', details: updateError.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
@@ -114,12 +128,13 @@ export async function DELETE(request, { params }) {
     const { id } = params
 
     // Get image to delete (to clean up storage)
-    const image = await prisma.galleryImage.findUnique({
-      where: { id },
-      select: { fileName: true }
-    })
+    const { data: image, error: fetchError } = await supabase
+      .from('gallery_images')
+      .select('fileName')
+      .eq('id', id)
+      .single()
 
-    if (!image) {
+    if (fetchError || !image) {
       return NextResponse.json(
         { error: 'Gallery image not found' },
         { status: 404 }
@@ -127,9 +142,18 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete from database
-    await prisma.galleryImage.delete({
-      where: { id }
-    })
+    const { error: deleteError } = await supabase
+      .from('gallery_images')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) {
+      console.error('Delete error:', deleteError)
+      return NextResponse.json(
+        { error: 'Failed to delete gallery image', details: deleteError.message },
+        { status: 500 }
+      )
+    }
 
     // Delete from storage
     try {
