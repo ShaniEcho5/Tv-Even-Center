@@ -2,8 +2,8 @@ import nodemailer from 'nodemailer';
 
 // Admin email addresses
 const ADMIN_EMAILS = [
-    
-  'shani@echo5digital.com'
+
+  'sony@echo5digital.com'
 ];
 
 // Create transporter using your SMTP configuration
