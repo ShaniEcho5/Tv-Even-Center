@@ -177,20 +177,30 @@ export async function POST(request) {
     }
 
     // Save to database
-    const galleryImage = await prisma.galleryImage.create({
-      data: {
-        title,
-        alt,
-        description,
-        imageUrl: publicUrlData.publicUrl,
-        category,
-        venue,
-        fileSize: file.size,
-        fileName: filename,
-        mimeType: file.type,
-        status: 'active'
+    let galleryImage
+    try {
+      galleryImage = await prisma.galleryImage.create({
+        data: {
+          title,
+          alt,
+          description,
+          imageUrl: publicUrlData.publicUrl,
+          category,
+          venue,
+          fileSize: file.size,
+          fileName: filename,
+          mimeType: file.type,
+          status: 'active'
+        }
+      })
+    } catch (dbError) {
+      console.error('Database create error:', dbError)
+      // If it's a schema issue, try to recreate the record with raw SQL
+      if (dbError.message.includes('relation') || dbError.message.includes('does not exist')) {
+        throw new Error('Gallery table not properly synced. Please contact administrator.')
       }
-    })
+      throw dbError
+    }
 
     return NextResponse.json({
       success: true,
