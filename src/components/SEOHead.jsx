@@ -11,9 +11,24 @@ export default function SEOHead({
   keywords 
 }) {
   const baseUrl = 'https://tv-even-center.vercel.app'
-  const fullCanonical = canonical?.startsWith('http') ? canonical : `${baseUrl}${canonical || ''}`
+  
+  // Ensure canonical URL is properly constructed
+  let fullCanonical
+  if (canonical?.startsWith('http')) {
+    fullCanonical = canonical
+  } else if (canonical) {
+    // Make sure path starts with /
+    const path = canonical.startsWith('/') ? canonical : `/${canonical}`
+    fullCanonical = `${baseUrl}${path}`
+  } else {
+    fullCanonical = baseUrl
+  }
+  
   const fullTitle = title ? `${title} | TVS Event Center` : 'TVS Event Center - Celebrate Life\'s Best Moments'
   const fullDescription = description || 'TVS Event Center is a luxurious event venue perfect for weddings, corporate events, birthdays, and celebrations. Located in Rosharon, TX with state-of-the-art facilities.'
+
+  // Debug log to check canonical URLs
+  console.log('SEOHead - Canonical URL:', fullCanonical, 'for page:', canonical)
 
   return (
     <Head>
