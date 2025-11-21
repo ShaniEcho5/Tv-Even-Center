@@ -42,14 +42,27 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
+  icons: {
+    icon: [
+      { url: '/TVS EVENT.png', sizes: '32x32' },
+      { url: '/TVS EVENT.png', sizes: '16x16', type: 'image/png' },
+      { url: '/TVS EVENT.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/TVS EVENT.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/tvs event.png'
+  },
+  manifest: '/site.webmanifest',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#d97b15" />
+        <meta name="msapplication-TileColor" content="#d97b15" />
       </head>
       <body className="font-body antialiased">
         <DynamicSEO />
