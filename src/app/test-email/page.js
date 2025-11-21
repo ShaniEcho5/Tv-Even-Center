@@ -55,7 +55,6 @@ export default function EmailTestPage() {
           <div className="mt-6 text-sm text-gray-600">
             <p><strong>Test will send emails to:</strong></p>
             <ul className="list-disc list-inside mt-2">
-              <li>sony@echo5digital.com</li>
               <li>shani@echo5digital.com</li>
             </ul>
           </div>

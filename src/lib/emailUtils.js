@@ -2,13 +2,13 @@ import nodemailer from 'nodemailer';
 
 // Admin email addresses
 const ADMIN_EMAILS = [
-  
+    
   'shani@echo5digital.com'
 ];
 
 // Create transporter using your SMTP configuration
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT),
     secure: false, // true for 465, false for other ports like 587
@@ -25,6 +25,15 @@ const createTransporter = () => {
 // Function to send admin notification email
 export async function sendAdminNotification(formData) {
   try {
+    console.log('🚀 Starting email notification process...');
+    console.log('📧 Admin emails:', ADMIN_EMAILS);
+    console.log('⚙️ Email config:', {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      user: process.env.EMAIL_USER,
+      hasPassword: !!process.env.EMAIL_PASSWORD
+    });
+    
     const transporter = createTransporter();
 
     // Create HTML email content
@@ -128,12 +137,23 @@ Submission Time: ${new Date().toLocaleString()}
     };
 
     // Send email
+    console.log('📤 Sending email to:', mailOptions.to);
+    console.log('📧 Email subject:', mailOptions.subject);
+    
     const info = await transporter.sendMail(mailOptions);
-    console.log('Admin notification email sent:', info.messageId);
+    console.log('✅ Admin notification email sent successfully!');
+    console.log('📬 Message ID:', info.messageId);
+    console.log('📨 Sent to:', ADMIN_EMAILS);
     
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('Error sending admin notification email:', error);
+    console.error('❌ Error sending admin notification email:', error);
+    console.error('🔧 Email config check:', {
+      hasUser: !!process.env.EMAIL_USER,
+      hasPassword: !!process.env.EMAIL_PASSWORD,
+      hasHost: !!process.env.SMTP_HOST,
+      hasPort: !!process.env.SMTP_PORT
+    });
     return { success: false, error: error.message };
   }
 }
