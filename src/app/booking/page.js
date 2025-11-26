@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BookingCalendar from '@/components/BookingCalendar'
@@ -20,6 +21,7 @@ export default function BookingPage() {
     budgetRange: '',
     message: ''
   })
+  const router = useRouter(); // Initialize router
 
   const handleDateSelect = (date) => {
     setSelectedDate(date)
@@ -68,6 +70,7 @@ export default function BookingPage() {
           message: ''
         })
         setSelectedDate(null)
+        router.push('/booking/payment'); // Redirect to payment page
       } else {
         alert('Failed to submit booking request. Please try again.')
       }
