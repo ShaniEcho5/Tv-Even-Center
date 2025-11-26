@@ -23,6 +23,11 @@ export default function BookingPage() {
   })
   const router = useRouter(); // Initialize router
 
+  // Ensure NextRouter is mounted correctly
+  if (typeof window === 'undefined') {
+    throw new Error('NextRouter is not available during prerendering.');
+  }
+
   const handleDateSelect = (date) => {
     setSelectedDate(date)
   }
