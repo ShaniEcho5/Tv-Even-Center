@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation' // ✅ FIXED
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BookingCalendar from '@/components/BookingCalendar'
@@ -11,6 +11,8 @@ import Image from 'next/image'
 import { Calendar, Clock, Users, DollarSign, CheckCircle } from 'lucide-react'
 
 export default function BookingPage() {
+  const router = useRouter() // ✅ App Router router
+  
   const [selectedDate, setSelectedDate] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -21,12 +23,6 @@ export default function BookingPage() {
     budgetRange: '',
     message: ''
   })
-  const router = useRouter(); // Initialize router
-
-  // Ensure NextRouter is mounted correctly
-  if (typeof window === 'undefined') {
-    throw new Error('NextRouter is not available during prerendering.');
-  }
 
   const handleDateSelect = (date) => {
     setSelectedDate(date)
@@ -75,7 +71,8 @@ export default function BookingPage() {
           message: ''
         })
         setSelectedDate(null)
-        router.push('/booking/payment'); // Redirect to payment page
+
+        router.push('/booking/payment') // ✅ Proper redirect
       } else {
         alert('Failed to submit booking request. Please try again.')
       }
@@ -91,11 +88,14 @@ export default function BookingPage() {
         title="Book Your Event"
         description="Book your event at TVS Event Center. Check availability, view pricing, and reserve your date for weddings, corporate events, and celebrations in Rosharon, TX."
         canonical="/booking"
-        keywords="book event venue, reserve venue date, event booking, wedding venue booking, corporate event reservation, TVS Event Center booking"
+        keywords="book event venue, event booking, venue reservation"
       />
+
       <Navbar />
+
       <main>
-        {/* Hero Section */}
+
+        {/* HERO */}
         <section className="relative h-[50vh] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <Image
@@ -127,10 +127,11 @@ export default function BookingPage() {
           </div>
         </section>
 
-        {/* Booking Form Section */}
+        {/* FORM SECTION */}
         <section className="section-padding bg-gray-50">
           <div className="container-padding">
             <div className="max-w-6xl mx-auto">
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -142,12 +143,13 @@ export default function BookingPage() {
                   Book Your Event
                 </h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Choose your event date and provide us with your details. We'll handle the rest to make your event unforgettable.
+                  Choose your event date and provide us with your details.
                 </p>
               </motion.div>
 
               <div className="grid lg:grid-cols-2 gap-8">
-                {/* Calendar Section */}
+
+                {/* Calendar */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -160,7 +162,7 @@ export default function BookingPage() {
                   />
                 </motion.div>
 
-                {/* Form Section */}
+                {/* Form */}
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -168,12 +170,14 @@ export default function BookingPage() {
                   viewport={{ once: true }}
                   className="bg-white rounded-lg border border-gray-200 p-6"
                 >
+
                   <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                     <Users className="w-6 h-6 text-amber-600 mr-3" />
                     Event Details
                   </h3>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
+
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -185,13 +189,12 @@ export default function BookingPage() {
                           value={formData.name}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                          placeholder="Your full name"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Email Address *
+                          Email *
                         </label>
                         <input
                           type="email"
@@ -199,8 +202,7 @@ export default function BookingPage() {
                           value={formData.email}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                          placeholder="your@email.com"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
                     </div>
@@ -208,15 +210,14 @@ export default function BookingPage() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Phone Number
+                          Phone
                         </label>
                         <input
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                          placeholder="(555) 123-4567"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
                       <div>
@@ -228,16 +229,13 @@ export default function BookingPage() {
                           value={formData.eventType}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         >
                           <option value="">Select event type</option>
                           <option value="Wedding">Wedding</option>
                           <option value="Corporate Event">Corporate Event</option>
                           <option value="Birthday Party">Birthday Party</option>
-                          <option value="Anniversary">Anniversary</option>
-                          <option value="Graduation">Graduation</option>
                           <option value="Reunion">Reunion</option>
-                          <option value="Conference">Conference</option>
                           <option value="Other">Other</option>
                         </select>
                       </div>
@@ -254,8 +252,7 @@ export default function BookingPage() {
                           value={formData.guestCount}
                           onChange={handleInputChange}
                           min="1"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                          placeholder="Number of guests"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
                       <div>
@@ -266,15 +263,14 @@ export default function BookingPage() {
                           name="budgetRange"
                           value={formData.budgetRange}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         >
-                          <option value="">Select budget range</option>
+                          <option value="">Select budget</option>
                           <option value="Under $1,000">Under $1,000</option>
                           <option value="$1,000 - $2,500">$1,000 - $2,500</option>
                           <option value="$2,500 - $5,000">$2,500 - $5,000</option>
                           <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                           <option value="$10,000+">$10,000+</option>
-                          <option value="Prefer not to say">Prefer not to say</option>
                         </select>
                       </div>
                     </div>
@@ -288,8 +284,7 @@ export default function BookingPage() {
                         value={formData.message}
                         onChange={handleInputChange}
                         rows={4}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                        placeholder="Tell us more about your event, special requirements, or any questions you have..."
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                       />
                     </div>
 
@@ -298,12 +293,7 @@ export default function BookingPage() {
                         <div className="flex items-center">
                           <CheckCircle className="w-5 h-5 text-amber-600 mr-2" />
                           <p className="font-semibold text-gray-900">
-                            Selected Date: {selectedDate.toLocaleDateString('en-GB', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
+                            Selected Date: {selectedDate.toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -312,54 +302,52 @@ export default function BookingPage() {
                     <button
                       type="submit"
                       disabled={!selectedDate}
-                      className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-300 ${
+                      className={`w-full py-4 px-6 rounded-lg font-semibold text-white ${
                         selectedDate
-                          ? 'bg-amber-500 hover:bg-amber-600 transform hover:scale-105'
+                          ? 'bg-amber-500 hover:bg-amber-600'
                           : 'bg-gray-400 cursor-not-allowed'
                       }`}
                     >
-                      {selectedDate ? 'Submit Booking Request' : 'Please Select a Date First'}
+                      {selectedDate ? 'Submit Booking Request' : 'Please Select a Date'}
                     </button>
                   </form>
 
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <p className="text-sm text-gray-600 text-center">
-                      <strong>Note:</strong> This is a booking request, not a confirmation. 
-                      Our team will contact you within 24 hours to confirm availability and finalize details.
-                    </p>
-                  </div>
                 </motion.div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Pricing Info */}
+        {/* PRICING */}
         <section className="section-padding bg-white">
           <div className="container-padding">
             <div className="max-w-4xl mx-auto text-center">
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
               >
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">
                   <DollarSign className="w-8 h-8 text-amber-600 mx-auto mb-4" />
                   Transparent Pricing
                 </h3>
                 <div className="bg-amber-50 rounded-xl p-8 border border-amber-200">
-                  <p className="text-3xl font-bold text-amber-800 mb-2">Starting at $649 + tax</p>
+                  <p className="text-3xl font-bold text-amber-800 mb-2">
+                    Starting at $649 + tax
+                  </p>
                   <p className="text-gray-700 font-medium">
-                    Our all-inclusive packages include venue rental, tables, chairs, 
-                    basic lighting, and sound system. Additional services available.
+                    Includes venue rental, tables, chairs, basic lighting, and sound.
                   </p>
                 </div>
               </motion.div>
+
             </div>
           </div>
         </section>
+
       </main>
+
       <Footer />
     </>
   )
