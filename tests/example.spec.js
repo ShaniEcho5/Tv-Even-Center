@@ -13,7 +13,7 @@ test.describe('TV Event Center Website', () => {
     test('has correct title and meta information', async ({ page }) => {
       await expect(page).toHaveTitle(/TV Event Center - Celebrate Life's Best Moments/);
       
-      // Check meta description
+      // Check meta descriptions
       const metaDescription = await page.locator('meta[name="description"]').getAttribute('content');
       expect(metaDescription).toContain('TV Event Center is a luxurious event venue');
     });
