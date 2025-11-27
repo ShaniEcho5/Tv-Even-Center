@@ -1,6 +1,61 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function SuccessPage() {
+  const searchParams = useSearchParams();
+  const [updating, setUpdating] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Get bookingId from localStorage or URL
+    const updateBookingStatus = async () => {
+      try {
+        let bookingId = null;
+        
+        // Try URL first
+        bookingId = searchParams.get('bookingId');
+        
+        // Fall back to localStorage
+        if (!bookingId && typeof window !== 'undefined') {
+          bookingId = localStorage.getItem('bookingId');
+        }
+
+        if (!bookingId) {
+          console.warn('No bookingId found to update payment status');
+          setUpdating(false);
+          return;
+        }
+
+        // Call the PATCH API to update booking to paid
+        const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentStatus: 'paid' })
+        });
+
+        if (response.ok) {
+          console.log('Booking payment status updated to paid');
+          // Clear localStorage
+          try { localStorage.removeItem('bookingId'); } catch (e) {}
+        } else {
+          const errData = await response.json();
+          console.error('Failed to update booking:', errData.error);
+          setError('Unable to confirm payment in system. Please contact support.');
+        }
+      } catch (err) {
+        console.error('Error updating booking status:', err);
+        setError('An error occurred. Please contact support.');
+      } finally {
+        setUpdating(false);
+      }
+    };
+
+    updateBookingStatus();
+  }, [searchParams]);
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
@@ -32,6 +87,21 @@ export default function SuccessPage() {
           <p className="text-sm text-gray-600 mb-2">
             A confirmation email has been sent to your registered email address.
           </p>
+          {updating && (
+            <p className="text-sm text-blue-600 font-medium">
+              Confirming your booking...
+            </p>
+          )}
+          {error && (
+            <p className="text-sm text-red-600 font-medium">
+              {error}
+            </p>
+          )}
+          {!updating && !error && (
+            <p className="text-sm text-green-600 font-medium">
+              ✓ Booking confirmed in system
+            </p>
+          )}
         </div>
 
         <Link

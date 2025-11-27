@@ -27,6 +27,11 @@ export async function POST(request) {
       }
     }
 
+    // Pass bookingId in success URL so success page can update booking status
+    const successUrl = bookingId 
+      ? `${process.env.NEXT_PUBLIC_BASE_URL}/success?bookingId=${encodeURIComponent(bookingId)}`
+      : `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -43,7 +48,7 @@ export async function POST(request) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
+      success_url: successUrl,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
       metadata: {
         bookingId: bookingId ? String(bookingId) : '',
