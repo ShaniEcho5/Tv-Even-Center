@@ -262,7 +262,7 @@ export default function BookingPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
-                      {/* <div>
+                      <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Budget Range
                         </label>
@@ -279,7 +279,7 @@ export default function BookingPage() {
                           <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                           <option value="$10,000+">$10,000+</option>
                         </select>
-                      </div> */}
+                      </div>
                     </div>
 
                     <div>
