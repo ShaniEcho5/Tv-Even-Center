@@ -285,11 +285,19 @@ export async function getBookings(filters = {}) {
 // Update booking payment info (used by webhook)
 export async function updateBookingPayment(bookingId, updates = {}) {
   try {
-    // Use service role key if available
+    // Use service role key if available for admin operations
     const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
-    const adminSupabase = serviceKey ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey) : supabase
+    
+    let adminSupabase = null
+    if (serviceKey) {
+      adminSupabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey)
+    } else {
+      // Fallback to regular client if service key not available (requires RLS policy)
+      console.warn('SUPABASE_SERVICE_ROLE_KEY not set; using anon client for booking update')
+      adminSupabase = supabase
+    }
 
-    if (!adminSupabase) throw new Error('Admin Supabase client not initialized')
+    if (!adminSupabase) throw new Error('Supabase client not initialized')
 
     // Map incoming update keys to camelCase DB columns if needed
     const payload = { ...updates }
@@ -302,7 +310,12 @@ export async function updateBookingPayment(bookingId, updates = {}) {
       .eq('id', bookingId)
       .select()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase update error:', { error, bookingId, payload })
+      throw error
+    }
+    
+    console.log('Booking updated successfully:', { bookingId, paymentStatus: payload.paymentStatus })
     return { success: true, data }
   } catch (error) {
     console.error('Error updating booking payment:', error)
