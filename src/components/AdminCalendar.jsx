@@ -20,6 +20,7 @@ import {
   isToday,
   isSameDay,
   isDateOccupied,
+  getOccupiedSlots,
   fetchOccupiedDates,
   addOccupiedDate,
   removeOccupiedDate

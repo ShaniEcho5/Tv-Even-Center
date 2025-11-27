@@ -18,6 +18,8 @@ import {
   isToday,
   isSameDay,
   isDateOccupied,
+  isDateFullyOccupied,
+  getOccupiedSlots,
   fetchOccupiedDates
 } from '@/lib/calendarUtils'
 
