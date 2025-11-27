@@ -95,8 +95,8 @@ export async function POST(request) {
         .single()
 
       if (error) {
-        console.error('Supabase update error:', error)
-        return NextResponse.json({ error: 'Failed to update occupied date' }, { status: 500 })
+        console.error('Supabase POST update error:', JSON.stringify(error, null, 2))
+        return NextResponse.json({ error: 'Failed to update occupied date', details: error.message, code: error.code }, { status: 500 })
       }
 
       return NextResponse.json({ message: 'Occupied date updated', data }, { status: 200 })
@@ -115,8 +115,8 @@ export async function POST(request) {
       .single()
 
     if (insertErr) {
-      console.error('Supabase insert error:', insertErr)
-      return NextResponse.json({ error: 'Failed to add occupied date' }, { status: 500 })
+      console.error('Supabase insert error:', JSON.stringify(insertErr, null, 2))
+      return NextResponse.json({ error: 'Failed to add occupied date', details: insertErr.message, code: insertErr.code }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Date marked as occupied successfully', data }, { status: 201 })
@@ -168,8 +168,8 @@ export async function DELETE(request) {
       .maybeSingle()
 
     if (updateErr) {
-      console.error('Supabase update error:', updateErr)
-      return NextResponse.json({ error: 'Failed to update occupied date' }, { status: 500 })
+      console.error('Supabase DELETE update error:', JSON.stringify(updateErr, null, 2))
+      return NextResponse.json({ error: 'Failed to update occupied date', details: updateErr.message, code: updateErr.code }, { status: 500 })
     }
 
     // If both slots now false, delete the row to keep table tidy
