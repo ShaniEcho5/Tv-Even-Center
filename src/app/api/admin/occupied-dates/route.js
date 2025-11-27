@@ -54,38 +54,72 @@ export async function GET() {
 // POST - Add occupied date
 export async function POST(request) {
   try {
-    const { date } = await request.json()
+    const { date, slot } = await request.json()
 
     if (!date) {
       return NextResponse.json({ error: 'Date is required' }, { status: 400 })
     }
 
-    // Check if date already exists
-    const { data: existing } = await supabase
-      .from('occupied_dates')
-      .select('id')
-      .eq('date', date)
-      .single()
+    const validSlots = ['daytime', 'evening']
+    const slotName = slot && validSlots.includes(slot) ? slot : null
 
-    if (existing) {
-      return NextResponse.json({ error: 'Date is already marked as occupied' }, { status: 409 })
+    // Try to fetch existing row (maybe single if none)
+    const { data: existing, error: fetchErr } = await supabase
+      .from('occupied_dates')
+      .select('*')
+      .eq('date', date)
+      .maybeSingle()
+
+    if (fetchErr) {
+      console.error('Supabase fetch error:', fetchErr)
+      return NextResponse.json({ error: 'Failed to read occupied dates', details: fetchErr.message }, { status: 500 })
     }
 
-    const { data, error } = await supabase
+    if (existing) {
+      // If existing row already has both slots true, inform caller
+      if (existing.daytime && existing.evening) {
+        return NextResponse.json({ error: 'Date is already fully occupied' }, { status: 409 })
+      }
+
+      // Update the specific slot or both if slot not supplied
+      const updates = {}
+      if (slotName === 'daytime') updates.daytime = true
+      else if (slotName === 'evening') updates.evening = true
+      else updates.daytime = true, updates.evening = true
+
+      const { data, error } = await supabase
+        .from('occupied_dates')
+        .update(updates)
+        .eq('date', date)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Supabase update error:', error)
+        return NextResponse.json({ error: 'Failed to update occupied date' }, { status: 500 })
+      }
+
+      return NextResponse.json({ message: 'Occupied date updated', data }, { status: 200 })
+    }
+
+    // Insert a new row
+    const insertPayload = { date, daytime: false, evening: false }
+    if (slotName === 'daytime') insertPayload.daytime = true
+    else if (slotName === 'evening') insertPayload.evening = true
+    else insertPayload.daytime = true, insertPayload.evening = true
+
+    const { data, error: insertErr } = await supabase
       .from('occupied_dates')
-      .insert([{ date }])
+      .insert([insertPayload])
       .select()
       .single()
 
-    if (error) {
-      console.error('Supabase error:', error)
+    if (insertErr) {
+      console.error('Supabase insert error:', insertErr)
       return NextResponse.json({ error: 'Failed to add occupied date' }, { status: 500 })
     }
 
-    return NextResponse.json({ 
-      message: 'Date marked as occupied successfully',
-      data 
-    }, { status: 201 })
+    return NextResponse.json({ message: 'Date marked as occupied successfully', data }, { status: 201 })
 
   } catch (error) {
     console.error('API Error:', error)
