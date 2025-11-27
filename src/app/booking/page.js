@@ -9,6 +9,7 @@ import SEOHead from '@/components/SEOHead'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Calendar, Clock, Users, DollarSign, CheckCircle } from 'lucide-react'
+import { companyInfo } from '@/data/companyInfo'
 
 export default function BookingPage() {
   const router = useRouter() // ✅ App Router router
@@ -47,6 +48,8 @@ export default function BookingPage() {
       ...formData,
       // match Supabase bookings table column names (camelCase)
       eventDate: selectedDate.toISOString(),
+      // include amount so NOT NULL constraint is satisfied (base price + cleaning fee)
+      amount: (companyInfo.pricing.basePrice + companyInfo.pricing.cleaning.fee) || companyInfo.pricing.basePrice,
       // booking table has default createdAt, no need to send createdAt explicitly
       paymentStatus: 'pending'
     }
