@@ -226,6 +226,7 @@ export async function submitBooking(formData) {
     }
 
     // Insert using camelCase column names to match your bookings table
+    const nowIso = new Date().toISOString()
     const { data, error } = await supabase
       .from('bookings')
       .insert([
@@ -233,15 +234,19 @@ export async function submitBooking(formData) {
           id: formData.id || undefined,
           name: formData.name,
           email: formData.email,
-          phone: formData.phone,
+          phone: formData.phone || '',
           eventType: formData.eventType,
           eventDate: formData.eventDate || null,
-          guestCount: formData.guestCount ? parseInt(formData.guestCount) : null,
+          // guestCount is NOT NULL in your schema; default to 0 if missing
+          guestCount: formData.guestCount ? parseInt(formData.guestCount) : 0,
           budgetRange: formData.budgetRange || null,
           message: formData.message || null,
           timeSlot: formData.timeSlot || formData.time_slot || 'daytime',
-          amount: formData.amount || null,
-          paymentStatus: formData.paymentStatus || 'pending'
+          // amount is NOT NULL; ensure numeric value (default 0 if not provided)
+          amount: formData.amount != null ? parseFloat(formData.amount) : 0,
+          paymentStatus: formData.paymentStatus || 'pending',
+          createdAt: formData.createdAt || nowIso,
+          updatedAt: formData.updatedAt || nowIso
         }
       ])
       .select()
