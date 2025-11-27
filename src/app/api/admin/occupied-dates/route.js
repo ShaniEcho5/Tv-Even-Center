@@ -127,29 +127,62 @@ export async function POST(request) {
   }
 }
 
-// DELETE - Remove occupied date
+// DELETE - Remove occupied date or free a specific slot
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
+    const slot = searchParams.get('slot')
 
     if (!date) {
       return NextResponse.json({ error: 'Date parameter is required' }, { status: 400 })
     }
 
-    const { error } = await supabase
-      .from('occupied_dates')
-      .delete()
-      .eq('date', date)
+    const validSlots = ['daytime', 'evening']
+    const slotName = slot && validSlots.includes(slot) ? slot : null
 
-    if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: 'Failed to remove occupied date' }, { status: 500 })
+    if (!slotName) {
+      // If no slot provided, remove whole row
+      const { error } = await supabase
+        .from('occupied_dates')
+        .delete()
+        .eq('date', date)
+
+      if (error) {
+        console.error('Supabase delete error:', error)
+        return NextResponse.json({ error: 'Failed to remove occupied date' }, { status: 500 })
+      }
+
+      return NextResponse.json({ message: 'Occupied date removed successfully' }, { status: 200 })
     }
 
-    return NextResponse.json({ 
-      message: 'Occupied date removed successfully' 
-    }, { status: 200 })
+    // Otherwise clear the specified slot
+    const updates = {}
+    updates[slotName] = false
+
+    const { data: updatedRow, error: updateErr } = await supabase
+      .from('occupied_dates')
+      .update(updates)
+      .eq('date', date)
+      .select()
+      .maybeSingle()
+
+    if (updateErr) {
+      console.error('Supabase update error:', updateErr)
+      return NextResponse.json({ error: 'Failed to update occupied date' }, { status: 500 })
+    }
+
+    // If both slots now false, delete the row to keep table tidy
+    if (updatedRow && !updatedRow.daytime && !updatedRow.evening) {
+      const { error: delErr } = await supabase
+        .from('occupied_dates')
+        .delete()
+        .eq('date', date)
+
+      if (delErr) console.warn('Failed to delete empty occupied_dates row:', delErr)
+    }
+
+    return NextResponse.json({ message: 'Slot freed', data: updatedRow || null }, { status: 200 })
 
   } catch (error) {
     console.error('API Error:', error)
