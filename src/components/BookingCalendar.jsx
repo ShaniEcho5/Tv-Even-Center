@@ -185,23 +185,20 @@ const BookingCalendar = ({ selectedDate, onDateSelect, className = '' }) => {
                 >
                   <span className="relative">
                     {date.getDate()}
-                    { (slots.daytime && slots.evening) ? (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full text-[6px] flex items-center justify-center text-white font-bold">×</span>
-                    ) : (
-                      // show per-slot indicators when partially occupied
-                      (() => {
-                        // `slots` already defined above
-                        if (slots.daytime || slots.evening) {
-                          return (
-                            <span className="absolute -top-1 -right-1 flex space-x-0.5">
-                              <span className={`w-2 h-2 ${slots.daytime ? 'bg-red-500' : 'bg-gray-300'} rounded-full`} />
-                              <span className={`w-2 h-2 ${slots.evening ? 'bg-red-500' : 'bg-gray-300'} rounded-full`} />
-                            </span>
-                          )
-                        }
-                        return null
-                      })()
-                    )}
+                    {(() => {
+                      const slots = getOccupiedSlots(date, occupiedDates)
+                      if (slots.daytime && slots.evening) {
+                        return <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full text-[6px] flex items-center justify-center text-white font-bold">×</span>
+                      } else if (slots.daytime || slots.evening) {
+                        return (
+                          <span className="absolute -top-1 -right-1 flex space-x-0.5">
+                            <span className={`w-2 h-2 ${slots.daytime ? 'bg-red-500' : 'bg-gray-300'} rounded-full`} />
+                            <span className={`w-2 h-2 ${slots.evening ? 'bg-red-500' : 'bg-gray-300'} rounded-full`} />
+                          </span>
+                        )
+                      }
+                      return null
+                    })()}
                   </span>
                 </button>
               ) : (
