@@ -90,7 +90,7 @@ const Navbar = () => {
               </span>
             </div>
             <Link
-              href="/contact"
+              href="/booking"
               className="btn-primary"
             >
               Book Now

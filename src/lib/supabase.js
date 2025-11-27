@@ -217,3 +217,82 @@ export async function deleteContactSubmission(id) {
     return { success: false, error: error.message }
   }
 }
+
+// Helper function to submit a booking (used before payment)
+export async function submitBooking(formData) {
+  try {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized')
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([
+        {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          event_type: formData.eventType,
+          event_date: formData.event_date || formData.eventDate || formData.event_date,
+          guest_count: parseInt(formData.guestCount) || null,
+          budget_range: formData.budgetRange,
+          message: formData.message,
+          status: 'pending_payment',
+          time_slot: formData.time_slot || null,
+          created_at: new Date().toISOString()
+        }
+      ])
+      .select()
+
+    if (error) {
+      console.error('Supabase error (submitBooking):', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error submitting booking:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Get bookings (admin)
+export async function getBookings(filters = {}) {
+  try {
+    if (!supabase) throw new Error('Supabase client not initialized')
+
+    let query = supabase.from('bookings').select('*').order('created_at', { ascending: false })
+
+    if (filters.status && filters.status !== 'all') query = query.eq('status', filters.status)
+
+    const { data, error } = await query
+    if (error) throw error
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error fetching bookings:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Update booking payment info (used by webhook)
+export async function updateBookingPayment(bookingId, updates = {}) {
+  try {
+    // Use service role key if available
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+    const adminSupabase = serviceKey ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey) : supabase
+
+    if (!adminSupabase) throw new Error('Admin Supabase client not initialized')
+
+    const { data, error } = await adminSupabase
+      .from('bookings')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', bookingId)
+      .select()
+
+    if (error) throw error
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error updating booking payment:', error)
+    return { success: false, error: error.message }
+  }
+}

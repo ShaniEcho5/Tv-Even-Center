@@ -4,9 +4,20 @@ import { useState } from 'react';
 import { companyInfo } from '@/data/companyInfo';
 import PayButton from '@/components/PayButton';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function BookingPaymentPage() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('daytime');
+  const [bookingId, setBookingId] = useState(null);
+
+  useEffect(() => {
+    try {
+      const id = typeof window !== 'undefined' ? localStorage.getItem('bookingId') : null
+      if (id) setBookingId(id)
+    } catch (e) {
+      console.warn('Unable to read bookingId from localStorage', e)
+    }
+  }, [])
 
   const basePrice = companyInfo.pricing.basePrice;
   const cleaningFee = companyInfo.pricing.cleaning.fee;
@@ -42,14 +53,14 @@ export default function BookingPaymentPage() {
             {/* Time Slot Selection */}
             <div className="mb-6 pb-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Time Slot</h3>
-              <div className="space-y-3">
+                <div className="space-y-3">
                 <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 transition" >
                   <input
                     type="radio"
                     name="timeSlot"
                     value="daytime"
                     checked={selectedTimeSlot === 'daytime'}
-                    onChange={(e) => setSelectedTimeSlot(e.target.value)}
+                    onChange={(e) => { setSelectedTimeSlot(e.target.value); try { localStorage.setItem('selectedTimeSlot', e.target.value) } catch(e){}}}
                     className="mr-3"
                   />
                   <div>
@@ -66,7 +77,7 @@ export default function BookingPaymentPage() {
                     name="timeSlot"
                     value="evening"
                     checked={selectedTimeSlot === 'evening'}
-                    onChange={(e) => setSelectedTimeSlot(e.target.value)}
+                    onChange={(e) => { setSelectedTimeSlot(e.target.value); try { localStorage.setItem('selectedTimeSlot', e.target.value) } catch(e){}}}
                     className="mr-3"
                   />
                   <div>
@@ -130,7 +141,7 @@ export default function BookingPaymentPage() {
 
             {/* Payment Button */}
             <div className="mb-6">
-              <PayButton />
+              <PayButton bookingId={bookingId} timeSlot={selectedTimeSlot} />
             </div>
 
             {/* Back Link */}

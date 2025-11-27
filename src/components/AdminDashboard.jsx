@@ -37,6 +37,7 @@ import {
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [submissions, setSubmissions] = useState([])
+  const [bookings, setBookings] = useState([])
   const [stats, setStats] = useState({
     total: 0,
     new: 0,
@@ -59,7 +60,8 @@ const AdminDashboard = () => {
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'calendar', label: 'Calendar Management', icon: Calendar },
     { id: 'blog', label: 'Blog Management', icon: FileText },
-    { id: 'gallery', label: 'Gallery Management', icon: ImageIcon }
+    { id: 'gallery', label: 'Gallery Management', icon: ImageIcon },
+    { id: 'bookings', label: 'Bookings', icon: DollarSign }
   ]
 
   // Fetch submissions and stats
@@ -85,10 +87,29 @@ const AdminDashboard = () => {
         const submissionsData = await submissionsResponse.json()
         setSubmissions(submissionsData)
       }
+
+      // also fetch bookings count for stats if needed
+      const bookingsResponse = await fetch('/api/admin/bookings')
+      if (bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json()
+        setBookings(bookingsData || [])
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch('/api/admin/bookings')
+      if (res.ok) {
+        const data = await res.json()
+        setBookings(data)
+      }
+    } catch (e) {
+      console.error('Error fetching bookings:', e)
     }
   }
 
@@ -285,6 +306,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchData()
   }, [filters])
+
+  useEffect(() => {
+    if (activeTab === 'bookings') fetchBookings()
+  }, [activeTab])
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -625,6 +650,61 @@ const AdminDashboard = () => {
           <BlogManagement />
         ) : activeTab === 'gallery' ? (
           <GalleryManagement />
+        ) : activeTab === 'bookings' ? (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Bookings</h2>
+              <p className="text-gray-600">List of bookings and payment status.</p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                {bookings.length === 0 ? (
+                  <div className="text-center p-12">
+                    <Mail className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No bookings found.</p>
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Slot</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {bookings.map((b) => (
+                        <tr key={b.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{b.name}</div>
+                              <div className="text-sm text-gray-500 flex items-center"><Mail className="w-3 h-3 mr-1" />{b.email}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm text-gray-900">{b.event_type}</div>
+                              {b.event_date && <div className="text-sm text-gray-500">{new Date(b.event_date).toLocaleDateString('en-GB')}</div>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.time_slot || 'Not selected'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${b.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                              {b.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.created_at ? new Date(b.created_at).toLocaleDateString('en-GB') : 'N/A'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
         ) : null}
       </div>
 

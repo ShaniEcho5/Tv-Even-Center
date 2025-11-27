@@ -51,7 +51,7 @@ export default function BookingPage() {
     }
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,6 +60,13 @@ export default function BookingPage() {
       })
 
       if (response.ok) {
+        const data = await response.json()
+        const bookingId = data.submissionId || data.bookingId || data.id
+        // store booking id for payment flow
+        if (bookingId) {
+          try { localStorage.setItem('bookingId', String(bookingId)) } catch (e) { console.warn(e) }
+        }
+
         alert('Booking request submitted successfully!')
         setFormData({
           name: '',
@@ -255,7 +262,7 @@ export default function BookingPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Budget Range
                         </label>
@@ -272,7 +279,7 @@ export default function BookingPage() {
                           <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                           <option value="$10,000+">$10,000+</option>
                         </select>
-                      </div>
+                      </div> */}
                     </div>
 
                     <div>

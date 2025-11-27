@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function PayButton() {
+export default function PayButton({ bookingId: propBookingId, timeSlot: propTimeSlot }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,11 +11,16 @@ export default function PayButton() {
     setError(null);
 
     try {
+      // read bookingId/timeSlot from props or localStorage
+      const bookingId = propBookingId || (typeof window !== 'undefined' ? localStorage.getItem('bookingId') : null)
+      const timeSlot = propTimeSlot || (typeof window !== 'undefined' ? localStorage.getItem('selectedTimeSlot') : null)
+
       const response = await fetch('/api/checkout_sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ bookingId, timeSlot })
       });
 
       if (!response.ok) {
