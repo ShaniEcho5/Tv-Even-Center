@@ -73,11 +73,15 @@ const BookingCalendar = ({ selectedDate, onDateSelect, className = '' }) => {
     if (!date) return ''
     
     let classes = 'w-8 h-8 flex items-center justify-center text-xs rounded-lg transition-all duration-200 font-semibold '
+    const slots = getOccupiedSlots(date, occupiedDates)
     
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed '
-    } else if (isDateFullyOccupied(date, occupiedDates)) {
+    } else if (slots.daytime && slots.evening) {
       classes += 'bg-red-100 text-red-700 cursor-not-allowed border border-red-300 relative '
+    } else if (slots.daytime || slots.evening) {
+      // Partially occupied (one slot) - show amber highlight so users see limited availability
+      classes += 'bg-amber-50 text-amber-800 border border-amber-300 relative '
     } else {
       classes += 'bg-white text-gray-700 border border-gray-200 hover:bg-green-50 hover:border-green-300 cursor-pointer '
       
@@ -181,12 +185,12 @@ const BookingCalendar = ({ selectedDate, onDateSelect, className = '' }) => {
                 >
                   <span className="relative">
                     {date.getDate()}
-                    {isDateFullyOccupied(date, occupiedDates) ? (
+                    { (slots.daytime && slots.evening) ? (
                       <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full text-[6px] flex items-center justify-center text-white font-bold">×</span>
                     ) : (
                       // show per-slot indicators when partially occupied
                       (() => {
-                        const slots = getOccupiedSlots(date, occupiedDates)
+                        // `slots` already defined above
                         if (slots.daytime || slots.evening) {
                           return (
                             <span className="absolute -top-1 -right-1 flex space-x-0.5">

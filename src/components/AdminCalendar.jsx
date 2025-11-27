@@ -118,11 +118,14 @@ const AdminCalendar = () => {
     if (!date) return ''
     
     let classes = 'w-10 h-10 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all duration-200 '
+    const slots = getOccupiedSlots(date, occupiedDates)
     
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed '
-    } else if (isDateOccupied(date, occupiedDates)) {
+    } else if (slots.daytime && slots.evening) {
       classes += 'bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-200 '
+    } else if (slots.daytime || slots.evening) {
+      classes += 'bg-amber-50 text-amber-800 border-2 border-amber-300 hover:bg-amber-100 '
     } else if (isToday(date)) {
       classes += 'bg-blue-100 text-blue-800 border-2 border-blue-300 hover:bg-blue-200 '
     } else {
