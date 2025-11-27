@@ -63,10 +63,26 @@ export async function POST(request) {
     const validSlots = ['daytime', 'evening']
     const slotName = slot && validSlots.includes(slot) ? slot : null
 
-    // Build the payload: set the requested slot to true, keep other as-is
-    const upsertPayload = { date, daytime: slotName === 'daytime' || slotName === null, evening: slotName === 'evening' || slotName === null }
+    // Fetch current row to preserve existing slot states
+    const { data: existing, error: fetchErr } = await supabase
+      .from('occupied_dates')
+      .select('*')
+      .eq('date', date)
+      .maybeSingle()
 
-    // Use upsert: if row exists for this date, it will update; otherwise insert
+    if (fetchErr && fetchErr.code !== 'PGRST116') {
+      console.error('Supabase fetch error:', fetchErr)
+      return NextResponse.json({ error: 'Failed to read occupied dates', details: fetchErr.message }, { status: 500 })
+    }
+
+    // Merge: keep existing values, only set the requested slot to true
+    const upsertPayload = {
+      date,
+      daytime: existing?.daytime === true ? true : (slotName === 'daytime'),
+      evening: existing?.evening === true ? true : (slotName === 'evening')
+    }
+
+    // Use upsert to insert or update
     const { data, error } = await supabase
       .from('occupied_dates')
       .upsert([upsertPayload], { onConflict: 'date' })
@@ -76,11 +92,6 @@ export async function POST(request) {
     if (error) {
       console.error('Supabase upsert error:', JSON.stringify(error, null, 2))
       return NextResponse.json({ error: 'Failed to update occupied date', details: error.message, code: error.code }, { status: 500 })
-    }
-
-    // Check if now both slots are occupied
-    if (data.daytime && data.evening) {
-      return NextResponse.json({ message: 'Date fully occupied', data }, { status: 200 })
     }
 
     return NextResponse.json({ message: 'Slot marked as occupied', data }, { status: 201 })
