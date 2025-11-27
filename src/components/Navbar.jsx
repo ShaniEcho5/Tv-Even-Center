@@ -152,7 +152,7 @@ const Navbar = () => {
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Mail className="w-4 h-4" />
-                    <span>info@tveventcenter.com</span>
+                    <span>tvseventcenter@gmail.com</span>
                   </div>
                   <Link
                     href="/contact"

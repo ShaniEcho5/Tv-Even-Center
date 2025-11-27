@@ -145,7 +145,7 @@ const ContactForm = () => {
         <div className="space-y-4">
           {[
             { icon: Phone, label: 'Phone', value: '832-228-1066' },
-            { icon: Mail, label: 'Email', value: 'info@tveventcenter.com' },
+            { icon: Mail, label: 'Email', value: 'tvseventcenter@gmail.com' },
             { icon: MapPin, label: 'Address', value: '15511 Hwy 6 Suite A, Rosharon, TX 77583' },
             { icon: Clock, label: 'Business Hours', value: 'Mon–Fri 9AM–8PM, Sat 9AM–10PM, Sun 10AM–6PM' }
           ].map(({ icon: Icon, label, value }) => (

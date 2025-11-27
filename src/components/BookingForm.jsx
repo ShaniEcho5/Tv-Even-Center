@@ -38,7 +38,7 @@ export default function BookingForm() {
           <div className="mt-6 text-sm text-gray-600">
             <p className="font-semibold">Get in Touch</p>
             <p className="text-blue-600">+1 832 276 1055</p>
-            <p>info@stjamesbanquethall.com</p>
+            <p>tvseventcenter@gmail.com</p>
           </div>
         </div>
 

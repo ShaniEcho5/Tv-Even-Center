@@ -7,7 +7,7 @@ export const companyInfo = {
   contact: {
     phone: "832-228-1066",
     email: "tvseventcenter@gmail.com",
-    contactPerson: "Timothy"
+    contactPerson: "Benny"
   },
   
   // Address Information
