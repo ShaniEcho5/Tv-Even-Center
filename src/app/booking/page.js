@@ -22,6 +22,7 @@ export default function BookingPage() {
     eventType: '',
     guestCount: '',
     budgetRange: '',
+    timeSlot: 'daytime',
     message: ''
   })
 
@@ -70,6 +71,8 @@ export default function BookingPage() {
         if (bookingId) {
           try { localStorage.setItem('bookingId', String(bookingId)) } catch (e) { console.warn(e) }
         }
+        // store selected timeSlot as well so payment page can read it
+        try { localStorage.setItem('selectedTimeSlot', submissionData.timeSlot || formData.timeSlot || 'daytime') } catch(e) { console.warn(e) }
 
         alert('Booking request submitted successfully!')
         setFormData({
@@ -283,6 +286,27 @@ export default function BookingPage() {
                           <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                           <option value="$10,000+">$10,000+</option>
                         </select>
+                      </div>
+                    </div>
+
+                    {/* Time Slot Selection (moved to booking step) */}
+                    <div className="mt-4">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Select Time Slot *</label>
+                      <div className="flex gap-4">
+                        <label className={`flex items-center p-3 border rounded-lg cursor-pointer ${formData.timeSlot === 'daytime' ? 'border-amber-500 bg-amber-50' : 'border-gray-300'}`}>
+                          <input type="radio" name="timeSlot" value="daytime" checked={formData.timeSlot === 'daytime'} onChange={handleInputChange} className="mr-2" />
+                          <div>
+                            <div className="font-semibold">Daytime</div>
+                            <div className="text-sm text-gray-600">{companyInfo.pricing.timeSlots.daytime.hours}</div>
+                          </div>
+                        </label>
+                        <label className={`flex items-center p-3 border rounded-lg cursor-pointer ${formData.timeSlot === 'evening' ? 'border-amber-500 bg-amber-50' : 'border-gray-300'}`}>
+                          <input type="radio" name="timeSlot" value="evening" checked={formData.timeSlot === 'evening'} onChange={handleInputChange} className="mr-2" />
+                          <div>
+                            <div className="font-semibold">Evening</div>
+                            <div className="text-sm text-gray-600">{companyInfo.pricing.timeSlots.evening.hours}</div>
+                          </div>
+                        </label>
                       </div>
                     </div>
 

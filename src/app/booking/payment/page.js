@@ -19,6 +19,15 @@ export default function BookingPaymentPage() {
     }
   }, [])
 
+  useEffect(() => {
+    try {
+      const slot = typeof window !== 'undefined' ? localStorage.getItem('selectedTimeSlot') : null
+      if (slot) setSelectedTimeSlot(slot)
+    } catch (e) {
+      console.warn('Unable to read selectedTimeSlot from localStorage', e)
+    }
+  }, [])
+
   const basePrice = companyInfo.pricing.basePrice;
   const cleaningFee = companyInfo.pricing.cleaning.fee;
   const total = basePrice + cleaningFee;
@@ -50,43 +59,14 @@ export default function BookingPaymentPage() {
               <p className="text-sm text-gray-500">Area: {companyInfo.totalArea}</p>
             </div>
 
-            {/* Time Slot Selection */}
+            {/* Selected Time Slot (chosen on booking page) */}
             <div className="mb-6 pb-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Time Slot</h3>
-                <div className="space-y-3">
-                <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 transition" >
-                  <input
-                    type="radio"
-                    name="timeSlot"
-                    value="daytime"
-                    checked={selectedTimeSlot === 'daytime'}
-                    onChange={(e) => { setSelectedTimeSlot(e.target.value); try { localStorage.setItem('selectedTimeSlot', e.target.value) } catch(e){}}}
-                    className="mr-3"
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-900">Daytime</p>
-                    <p className="text-sm text-gray-600">
-                      {companyInfo.pricing.timeSlots.daytime.hours}
-                    </p>
-                  </div>
-                </label>
-
-                <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 transition">
-                  <input
-                    type="radio"
-                    name="timeSlot"
-                    value="evening"
-                    checked={selectedTimeSlot === 'evening'}
-                    onChange={(e) => { setSelectedTimeSlot(e.target.value); try { localStorage.setItem('selectedTimeSlot', e.target.value) } catch(e){}}}
-                    className="mr-3"
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-900">Evening</p>
-                    <p className="text-sm text-gray-600">
-                      {companyInfo.pricing.timeSlots.evening.hours}
-                    </p>
-                  </div>
-                </label>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Selected Time Slot</h3>
+              <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <p className="font-semibold text-gray-900">{selectedTimeSlot === 'evening' ? 'Evening' : 'Daytime'}</p>
+                <p className="text-sm text-gray-600">
+                  {selectedTimeSlot === 'evening' ? companyInfo.pricing.timeSlots.evening.hours : companyInfo.pricing.timeSlots.daytime.hours}
+                </p>
               </div>
             </div>
 
