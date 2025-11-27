@@ -1,5 +1,6 @@
 import { submitBooking } from '@/lib/supabase'
 import { sendAdminNotification, sendCustomerConfirmation } from '@/lib/emailUtils'
+import { randomUUID } from 'crypto'
 
 export async function POST(request) {
   try {
@@ -9,6 +10,9 @@ export async function POST(request) {
     if (!formData.name || !formData.email || !formData.eventDate) {
       return Response.json({ error: 'Name, email and eventDate are required' }, { status: 400 })
     }
+
+    // Ensure booking has a non-null id (DB requires id NOT NULL)
+    if (!formData.id) formData.id = randomUUID()
 
     const result = await submitBooking(formData)
     if (!result.success) {
