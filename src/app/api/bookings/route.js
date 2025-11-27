@@ -5,9 +5,9 @@ export async function POST(request) {
   try {
     const formData = await request.json()
 
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.event_date) {
-      return Response.json({ error: 'Name, email and event date are required' }, { status: 400 })
+    // Basic validation - use camelCase keys matching bookings table
+    if (!formData.name || !formData.email || !formData.eventDate) {
+      return Response.json({ error: 'Name, email and eventDate are required' }, { status: 400 })
     }
 
     const result = await submitBooking(formData)

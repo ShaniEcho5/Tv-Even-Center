@@ -225,21 +225,23 @@ export async function submitBooking(formData) {
       throw new Error('Supabase client not initialized')
     }
 
+    // Insert using camelCase column names to match your bookings table
     const { data, error } = await supabase
       .from('bookings')
       .insert([
         {
+          id: formData.id || undefined,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
-          event_type: formData.eventType,
-          event_date: formData.event_date || formData.eventDate || formData.event_date,
-          guest_count: parseInt(formData.guestCount) || null,
-          budget_range: formData.budgetRange,
-          message: formData.message,
-          status: 'pending_payment',
-          time_slot: formData.time_slot || null,
-          created_at: new Date().toISOString()
+          eventType: formData.eventType,
+          eventDate: formData.eventDate || null,
+          guestCount: formData.guestCount ? parseInt(formData.guestCount) : null,
+          budgetRange: formData.budgetRange || null,
+          message: formData.message || null,
+          timeSlot: formData.timeSlot || formData.time_slot || 'daytime',
+          amount: formData.amount || null,
+          paymentStatus: formData.paymentStatus || 'pending'
         }
       ])
       .select()
@@ -261,9 +263,10 @@ export async function getBookings(filters = {}) {
   try {
     if (!supabase) throw new Error('Supabase client not initialized')
 
-    let query = supabase.from('bookings').select('*').order('created_at', { ascending: false })
+    // order by createdAt
+    let query = supabase.from('bookings').select('*').order('createdAt', { ascending: false })
 
-    if (filters.status && filters.status !== 'all') query = query.eq('status', filters.status)
+    if (filters.status && filters.status !== 'all') query = query.eq('paymentStatus', filters.status)
 
     const { data, error } = await query
     if (error) throw error
@@ -283,9 +286,14 @@ export async function updateBookingPayment(bookingId, updates = {}) {
 
     if (!adminSupabase) throw new Error('Admin Supabase client not initialized')
 
+    // Map incoming update keys to camelCase DB columns if needed
+    const payload = { ...updates }
+    if (payload.updated_at) delete payload.updated_at
+    payload.updatedAt = new Date().toISOString()
+
     const { data, error } = await adminSupabase
       .from('bookings')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update(payload)
       .eq('id', bookingId)
       .select()
 

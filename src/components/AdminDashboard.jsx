@@ -686,17 +686,17 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm text-gray-900">{b.event_type}</div>
-                              {b.event_date && <div className="text-sm text-gray-500">{new Date(b.event_date).toLocaleDateString('en-GB')}</div>}
+                              <div className="text-sm text-gray-900">{b.eventType}</div>
+                              {b.eventDate && <div className="text-sm text-gray-500">{new Date(b.eventDate).toLocaleDateString('en-GB')}</div>}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.time_slot || 'Not selected'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.timeSlot || 'Not selected'}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${b.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                              {b.status}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${b.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                              {b.paymentStatus}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.created_at ? new Date(b.created_at).toLocaleDateString('en-GB') : 'N/A'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-GB') : 'N/A'}</td>
                         </tr>
                       ))}
                     </tbody>

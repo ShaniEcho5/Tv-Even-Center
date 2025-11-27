@@ -26,15 +26,15 @@ export async function POST(request) {
     try {
       if (bookingId) {
         const updates = {
-          status: 'paid',
-          payment_status: session.payment_status || 'paid',
-          payment_details: {
+          paymentStatus: 'paid',
+          paymentDetails: {
             payment_intent: session.payment_intent,
             amount_total: session.amount_total,
             currency: session.currency,
             customer_email: session.customer_email || session.customer_details?.email || null
           },
-          time_slot: timeSlot || undefined
+          timeSlot: timeSlot || undefined,
+          stripeSessionId: session.id || undefined
         }
 
         const result = await updateBookingPayment(bookingId, updates)

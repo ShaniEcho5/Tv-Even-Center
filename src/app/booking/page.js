@@ -45,9 +45,10 @@ export default function BookingPage() {
 
     const submissionData = {
       ...formData,
-      event_date: selectedDate.toISOString().split('T')[0],
-      created_at: new Date().toISOString(),
-      status: 'new'
+      // match Supabase bookings table column names (camelCase)
+      eventDate: selectedDate.toISOString(),
+      // booking table has default createdAt, no need to send createdAt explicitly
+      paymentStatus: 'pending'
     }
 
     try {
