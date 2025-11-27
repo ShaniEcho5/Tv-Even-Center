@@ -58,8 +58,8 @@ const BookingCalendar = ({ selectedDate, onDateSelect, className = '' }) => {
   }
 
   const handleDateClick = (date) => {
-    if (!date || isPastDate(date) || isDateOccupied(date, occupiedDates)) {
-      return // Prevent selection of past or occupied dates
+    if (!date || isPastDate(date) || isDateFullyOccupied(date, occupiedDates)) {
+      return // Prevent selection of past or fully occupied dates
     }
     
     if (onDateSelect) {
@@ -74,7 +74,7 @@ const BookingCalendar = ({ selectedDate, onDateSelect, className = '' }) => {
     
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed '
-    } else if (isDateOccupied(date, occupiedDates)) {
+    } else if (isDateFullyOccupied(date, occupiedDates)) {
       classes += 'bg-red-100 text-red-700 cursor-not-allowed border border-red-300 relative '
     } else {
       classes += 'bg-white text-gray-700 border border-gray-200 hover:bg-green-50 hover:border-green-300 cursor-pointer '
@@ -179,10 +179,22 @@ const BookingCalendar = ({ selectedDate, onDateSelect, className = '' }) => {
                 >
                   <span className="relative">
                     {date.getDate()}
-                    {isDateOccupied(date, occupiedDates) && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full text-[6px] flex items-center justify-center text-white font-bold">
-                        ×
-                      </span>
+                    {isDateFullyOccupied(date, occupiedDates) ? (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full text-[6px] flex items-center justify-center text-white font-bold">×</span>
+                    ) : (
+                      // show per-slot indicators when partially occupied
+                      (() => {
+                        const slots = getOccupiedSlots(date, occupiedDates)
+                        if (slots.daytime || slots.evening) {
+                          return (
+                            <span className="absolute -top-1 -right-1 flex space-x-0.5">
+                              <span className={`w-2 h-2 ${slots.daytime ? 'bg-red-500' : 'bg-gray-300'} rounded-full`} />
+                              <span className={`w-2 h-2 ${slots.evening ? 'bg-red-500' : 'bg-gray-300'} rounded-full`} />
+                            </span>
+                          )
+                        }
+                        return null
+                      })()
                     )}
                   </span>
                 </button>

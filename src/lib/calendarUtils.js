@@ -93,6 +93,7 @@ export const fetchOccupiedDates = async () => {
     }
     
     const data = await response.json()
+    // Expect records with { date: 'YYYY-MM-DD', daytime: boolean, evening: boolean }
     return data.dates || []
   } catch (error) {
     console.error('Error fetching occupied dates:', error)
@@ -141,8 +142,28 @@ export const removeOccupiedDate = async (date) => {
 }
 
 // Check if date is occupied
-export const isDateOccupied = (date, occupiedDates) => {
+export const isDateFullyOccupied = (date, occupiedDates) => {
   if (!date || !occupiedDates) return false
   const dateString = formatDateToString(date)
-  return occupiedDates.some(occupiedDate => occupiedDate.date === dateString)
+  const rec = occupiedDates.find(d => d.date === dateString)
+  if (!rec) return false
+  // fully occupied if both slots true
+  return !!rec.daytime && !!rec.evening
+}
+
+export const getOccupiedSlots = (date, occupiedDates) => {
+  if (!date || !occupiedDates) return { daytime: false, evening: false }
+  const dateString = formatDateToString(date)
+  const rec = occupiedDates.find(d => d.date === dateString)
+  if (!rec) return { daytime: false, evening: false }
+  return { daytime: !!rec.daytime, evening: !!rec.evening }
+}
+
+export const isDateOccupied = (date, occupiedDates, slot = null) => {
+  // If slot specified, check that slot; otherwise if any slot occupied return true
+  if (!date || !occupiedDates) return false
+  const slots = getOccupiedSlots(date, occupiedDates)
+  if (slot === 'daytime') return slots.daytime
+  if (slot === 'evening') return slots.evening
+  return slots.daytime && slots.evening
 }

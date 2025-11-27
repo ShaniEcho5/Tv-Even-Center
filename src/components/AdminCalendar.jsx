@@ -78,26 +78,35 @@ const AdminCalendar = () => {
     setSelectedDate(date)
   }
 
-  const toggleOccupiedDate = async (date) => {
+  const toggleOccupiedSlot = async (date, slot) => {
     if (!date || isPastDate(date)) return
 
     try {
-      const isOccupied = isDateOccupied(date, occupiedDates)
-      
-      if (isOccupied) {
-        await removeOccupiedDate(date)
-        setOccupiedDates(prev => prev.filter(d => d.date !== formatDateToString(date)))
-        showNotificationMessage('success', 'Date marked as available')
+      const dateString = formatDateToString(date)
+      const slots = getOccupiedSlots(date, occupiedDates)
+      const currently = slots[slot]
+
+      // If currently true, we want to free the slot; otherwise occupy it
+      if (currently) {
+        // call API to free slot
+        const res = await fetch(`/api/admin/occupied-dates?date=${dateString}&slot=${slot}`, { method: 'DELETE' })
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to free slot')
+        // update local state
+        setOccupiedDates(prev => prev.map(d => d.date === dateString ? { ...d, [slot]: false } : d))
+        showNotificationMessage('success', `${slot} marked available`) 
       } else {
-        await addOccupiedDate(date)
-        const newOccupiedDate = { 
-          date: formatDateToString(date), 
-          id: Date.now().toString() // Temporary ID
-        }
-        setOccupiedDates(prev => [...prev, newOccupiedDate])
-        showNotificationMessage('success', 'Date marked as occupied')
+        const res = await fetch('/api/admin/occupied-dates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: dateString, slot }) })
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to occupy slot')
+        const updated = await res.json()
+        // update local state
+        setOccupiedDates(prev => {
+          const exists = prev.find(d => d.date === dateString)
+          if (exists) return prev.map(d => d.date === dateString ? { ...d, [slot]: true } : d)
+          return [...prev, { date: dateString, id: updated.data?.id || Date.now().toString(), daytime: slot === 'daytime', evening: slot === 'evening' }]
+        })
+        showNotificationMessage('success', `${slot} marked occupied`)
       }
-      
+
       setSelectedDate(null)
     } catch (error) {
       showNotificationMessage('error', error.message)
@@ -216,40 +225,35 @@ const AdminCalendar = () => {
           className="bg-gray-50 rounded-lg p-4 border-l-4 border-amber-500"
         >
           <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-gray-900">
-                {selectedDate.toLocaleDateString('en-GB', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
-              <p className="text-sm text-gray-600 font-medium">
-                Currently: {isDateOccupied(selectedDate, occupiedDates) ? 'Occupied' : 'Available'}
-              </p>
-            </div>
-            <button
-              onClick={() => toggleOccupiedDate(selectedDate)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
-                isDateOccupied(selectedDate, occupiedDates)
-                  ? 'bg-green-500 hover:bg-green-600 text-white'
-                  : 'bg-red-500 hover:bg-red-600 text-white'
-              }`}
-            >
-              {isDateOccupied(selectedDate, occupiedDates) ? (
-                <>
-                  <Minus className="w-4 h-4" />
-                  <span>Mark Available</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  <span>Mark Occupied</span>
-                </>
-              )}
-            </button>
-          </div>
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    {selectedDate.toLocaleDateString('en-GB', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </p>
+                  <p className="text-sm text-gray-600 font-medium">Slot status:</p>
+                  <div className="flex items-center space-x-3 mt-2">
+                    {(() => {
+                      const slots = getOccupiedSlots(selectedDate, occupiedDates)
+                      return (
+                        <>
+                          <div className="flex items-center space-x-2">
+                            <span className={`px-2 py-1 rounded text-sm font-medium ${slots.daytime ? 'bg-red-100 text-red-800' : 'bg-green-50 text-green-800'}`}>Daytime</span>
+                            <button onClick={() => toggleOccupiedSlot(selectedDate, 'daytime')} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm">{slots.daytime ? 'Free' : 'Occupy'}</button>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`px-2 py-1 rounded text-sm font-medium ${slots.evening ? 'bg-red-100 text-red-800' : 'bg-green-50 text-green-800'}`}>Evening</span>
+                            <button onClick={() => toggleOccupiedSlot(selectedDate, 'evening')} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm">{slots.evening ? 'Free' : 'Occupy'}</button>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
+              </div>
         </motion.div>
       )}
 
