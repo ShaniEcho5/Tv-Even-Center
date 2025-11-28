@@ -374,10 +374,14 @@ export async function createAdmin(username, email, hashedPassword) {
       adminSupabase = supabase
     }
 
+    // Generate a unique ID for the admin
+    const adminId = Buffer.from(`${username}-${Date.now()}-${Math.random()}`).toString('hex').slice(0, 32)
+
     const { data, error } = await adminSupabase
       .from('admins')
       .insert([
         {
+          id: adminId,
           username,
           email,
           password: hashedPassword
