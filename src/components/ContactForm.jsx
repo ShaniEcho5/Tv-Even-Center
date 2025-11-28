@@ -13,7 +13,6 @@ const ContactForm = () => {
     eventType: '',
     eventDate: '',
     guestCount: '',
-    budgetRange: '',
     message: ''
   })
   const [selectedDate, setSelectedDate] = useState(null)
@@ -33,15 +32,6 @@ const ContactForm = () => {
     'Other'
   ]
 
-  const budgetRanges = [
-    'Under $5,000',
-    '$5,000 - $10,000',
-    '$10,000 - $20,000',
-    '$20,000 - $50,000',
-    '$50,000 - $100,000',
-    'Over $100,000',
-    'Prefer not to say'
-  ]
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -90,7 +80,6 @@ const ContactForm = () => {
           eventType: '',
           eventDate: '',
           guestCount: '',
-          budgetRange: '',
           message: ''
         })
         setSelectedDate(null)
@@ -287,24 +276,7 @@ const ContactForm = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Budget Range
-                      </label>
-                      <select
-                        name="budgetRange"
-                        value={formData.budgetRange}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                      >
-                        <option value="">Select budget range</option>
-                        {budgetRanges.map((range) => (
-                          <option key={range} value={range}>
-                            {range}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* Budget Range removed - fixed range in business rules */}
                   </motion.div>
                 )}
               </AnimatePresence>

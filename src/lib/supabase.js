@@ -33,7 +33,6 @@ export async function submitContactForm(formData) {
           event_type: formData.eventType,
           event_date: formData.eventDate,
           guest_count: parseInt(formData.guestCount) || null,
-          budget_range: formData.budgetRange,
           message: formData.message,
           status: 'new'
         }
@@ -239,7 +238,6 @@ export async function submitBooking(formData) {
           eventDate: formData.eventDate || null,
           // guestCount is NOT NULL in your schema; default to 0 if missing
           guestCount: formData.guestCount ? parseInt(formData.guestCount) : 0,
-          budgetRange: formData.budgetRange || null,
           message: formData.message || null,
           timeSlot: formData.timeSlot || formData.time_slot || 'daytime',
           // amount is NOT NULL; ensure numeric value (default 0 if not provided)

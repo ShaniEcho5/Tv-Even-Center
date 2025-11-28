@@ -78,12 +78,7 @@ export async function sendAdminNotification(formData) {
               <td style="padding: 8px 0;">${formData.guestCount}</td>
             </tr>
             ` : ''}
-            ${formData.budgetRange ? `
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Budget Range:</td>
-              <td style="padding: 8px 0;">${formData.budgetRange}</td>
-            </tr>
-            ` : ''}
+            <!-- Budget Range removed (fixed range) -->
           </table>
         </div>
 
@@ -116,7 +111,7 @@ ${formData.phone ? `Phone: ${formData.phone}` : ''}
 ${formData.eventType ? `Event Type: ${formData.eventType}` : ''}
 ${formData.eventDate ? `Event Date: ${new Date(formData.eventDate).toLocaleDateString()}` : ''}
 ${formData.guestCount ? `Guest Count: ${formData.guestCount}` : ''}
-${formData.budgetRange ? `Budget Range: ${formData.budgetRange}` : ''}
+''
 
 Message:
 ${formData.message}
@@ -177,7 +172,7 @@ export async function sendCustomerConfirmation(formData) {
             <li><strong>Event Type:</strong> ${formData.eventType || 'Not specified'}</li>
             ${formData.eventDate ? `<li><strong>Event Date:</strong> ${new Date(formData.eventDate).toLocaleDateString()}</li>` : ''}
             ${formData.guestCount ? `<li><strong>Guest Count:</strong> ${formData.guestCount}</li>` : ''}
-            ${formData.budgetRange ? `<li><strong>Budget Range:</strong> ${formData.budgetRange}</li>` : ''}
+            <!-- Budget Range removed (fixed range) -->
           </ul>
         </div>
 

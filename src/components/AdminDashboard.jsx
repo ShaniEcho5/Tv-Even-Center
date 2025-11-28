@@ -227,7 +227,6 @@ const AdminDashboard = () => {
         String(submission.event_type || 'N/A'),
         submission.event_date ? new Date(submission.event_date).toLocaleDateString('en-US') : 'N/A',
         String(submission.guest_count || 'N/A'),
-        String(submission.budget_range || 'N/A'),
         String(submission.status || 'New'),
         submission.created_at ? new Date(submission.created_at).toLocaleDateString('en-US') : 'N/A'
       ])
@@ -244,8 +243,8 @@ const AdminDashboard = () => {
       doc.setFontSize(9)
       doc.setFont('helvetica', 'bold')
       
-      const headers = ['Name', 'Email', 'Phone', 'Event', 'Date', 'Guests', 'Budget', 'Status', 'Submitted']
-      const columnWidths = [25, 35, 20, 20, 18, 12, 20, 15, 18]
+      const headers = ['Name', 'Email', 'Phone', 'Event', 'Date', 'Guests', 'Status', 'Submitted']
+      const columnWidths = [25, 35, 20, 20, 18, 12, 20, 18]
       let xPosition = 20
       
       headers.forEach((header, index) => {
@@ -536,9 +535,7 @@ const AdminDashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Event Details
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Budget
-                    </th>
+                    {/* Budget column removed - fixed range */}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
@@ -589,11 +586,7 @@ const AdminDashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {submission.budget_range || 'Not specified'}
-                        </div>
-                      </td>
+                      {/* Budget column removed - fixed range */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
                           {getStatusIcon(submission.status)}
@@ -755,10 +748,7 @@ const AdminDashboard = () => {
                   <label className="block text-sm font-medium text-gray-700">Guest Count</label>
                   <p className="mt-1 text-sm text-gray-900">{selectedSubmission.guest_count || 'Not specified'}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Budget Range</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedSubmission.budget_range || 'Not specified'}</p>
-                </div>
+                {/* Budget Range removed (fixed range configured server-side) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSubmission.status)}`}>

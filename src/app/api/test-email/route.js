@@ -31,7 +31,6 @@ export async function POST(request) {
       eventType: 'Wedding',
       eventDate: '2024-12-25',
       guestCount: '100',
-      budgetRange: '$5000-$10000',
       message: 'This is a test email notification to verify the email system is working correctly. Sent at: ' + new Date().toLocaleString()
     };
 

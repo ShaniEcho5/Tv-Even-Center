@@ -21,7 +21,6 @@ export default function BookingPage() {
     phone: '',
     eventType: '',
     guestCount: '',
-    budgetRange: '',
     timeSlot: 'daytime',
     message: ''
   })
@@ -81,7 +80,6 @@ export default function BookingPage() {
           phone: '',
           eventType: '',
           guestCount: '',
-          budgetRange: '',
           message: ''
         })
         setSelectedDate(null)
@@ -269,24 +267,7 @@ export default function BookingPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Budget Range
-                        </label>
-                        <select
-                          name="budgetRange"
-                          value={formData.budgetRange}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                        >
-                          <option value="">Select budget</option>
-                          <option value="Under $1,000">Under $1,000</option>
-                          <option value="$1,000 - $2,500">$1,000 - $2,500</option>
-                          <option value="$2,500 - $5,000">$2,500 - $5,000</option>
-                          <option value="$5,000 - $10,000">$5,000 - $10,000</option>
-                          <option value="$10,000+">$10,000+</option>
-                        </select>
-                      </div>
+                      {/* Budget Range removed - fixed range handled server-side */}
                     </div>
 
                     {/* Time Slot Selection (moved to booking step) */}
