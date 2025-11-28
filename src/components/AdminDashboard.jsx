@@ -55,6 +55,8 @@ const AdminDashboard = () => {
   })
   const [selectedSubmission, setSelectedSubmission] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [showBookingModal, setShowBookingModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState({})
 
   // Tab configuration
@@ -113,6 +115,31 @@ const AdminDashboard = () => {
       }
     } catch (e) {
       console.error('Error fetching bookings:', e)
+    }
+  }
+
+  const updateBookingStatus = async (id, newStatus) => {
+    try {
+      const response = await fetch(`/api/admin/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus: newStatus })
+      })
+
+      if (response.ok) {
+        // Refresh bookings list and selected booking if open
+        fetchBookings()
+        if (selectedBooking && selectedBooking.id === id) {
+          const updated = await response.json()
+          setSelectedBooking(updated.data && updated.data[0] ? updated.data[0] : { ...selectedBooking, paymentStatus: newStatus })
+        }
+      } else {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to update booking')
+      }
+    } catch (error) {
+      console.error('Error updating booking status:', error)
+      alert(`Failed to update booking status: ${error.message}`)
     }
   }
 
@@ -671,6 +698,7 @@ const AdminDashboard = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Slot</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -695,6 +723,28 @@ const AdminDashboard = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-GB') : 'N/A'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                onClick={() => { setSelectedBooking(b); setShowBookingModal(true) }}
+                                className="text-gold-600 hover:text-gold-900 p-1"
+                                title="View Booking"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+
+                              <select
+                                value={b.paymentStatus || 'pending'}
+                                onChange={(e) => updateBookingStatus(b.id, e.target.value)}
+                                className="text-sm border border-gray-300 rounded px-2 py-1"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="paid">Success</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="refunded">Refunded</option>
+                              </select>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -776,6 +826,107 @@ const AdminDashboard = () => {
                   <label className="block font-medium">Last Updated</label>
                   <p>{selectedSubmission.updated_at ? new Date(selectedSubmission.updated_at).toLocaleString('en-GB') : 'Never'}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal for viewing booking details */}
+      {showBookingModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Booking Details</h3>
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.email}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.phone || 'Not provided'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Amount</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.amount != null ? `£${Number(selectedBooking.amount).toFixed(2)}` : 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Event Type</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.eventType || 'Not specified'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Event Date</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.eventDate ? new Date(selectedBooking.eventDate).toLocaleDateString('en-GB') : 'Not specified'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Time Slot</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.timeSlot || 'Not selected'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Payment Status</label>
+                  <p className="mt-1 text-sm text-gray-900 capitalize">{selectedBooking.paymentStatus || 'pending'}</p>
+                </div>
+              </div>
+
+              {selectedBooking.message && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Message</label>
+                  <div className="mt-1 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedBooking.message}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-500">
+                <div>
+                  <label className="block font-medium">Submitted</label>
+                  <p>{selectedBooking.createdAt ? new Date(selectedBooking.createdAt).toLocaleString('en-GB') : 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block font-medium">Last Updated</label>
+                  <p>{selectedBooking.updatedAt ? new Date(selectedBooking.updatedAt).toLocaleString('en-GB') : 'Never'}</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100 flex items-center space-x-3">
+                <button
+                  onClick={() => updateBookingStatus(selectedBooking.id, 'paid')}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                  Mark Success
+                </button>
+                <button
+                  onClick={() => updateBookingStatus(selectedBooking.id, 'cancelled')}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Mark Cancelled
+                </button>
+                <button
+                  onClick={() => updateBookingStatus(selectedBooking.id, 'refunded')}
+                  className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+                >
+                  Mark Refunded
+                </button>
+                <div className="flex-1" />
+                <button
+                  onClick={() => { setShowBookingModal(false); setSelectedBooking(null) }}
+                  className="px-4 py-2 rounded border"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
