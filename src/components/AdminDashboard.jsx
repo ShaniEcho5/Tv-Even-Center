@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import BlogManagement from './BlogManagement'
 import AdminCalendar from './AdminCalendar'
 import GalleryManagement from './GalleryManagement'
+import AdminManagement from './AdminManagement'
 import dynamic from 'next/dynamic'
 
 // Dynamically import jsPDF to avoid SSR issues
@@ -31,7 +32,8 @@ import {
   FileText,
   BarChart3,
   Trash2,
-  ImageIcon
+  ImageIcon,
+  Shield
 } from 'lucide-react'
 
 const AdminDashboard = () => {
@@ -61,7 +63,8 @@ const AdminDashboard = () => {
     { id: 'calendar', label: 'Calendar Management', icon: Calendar },
     { id: 'blog', label: 'Blog Management', icon: FileText },
     { id: 'gallery', label: 'Gallery Management', icon: ImageIcon },
-    { id: 'bookings', label: 'Bookings', icon: DollarSign }
+    { id: 'bookings', label: 'Bookings', icon: DollarSign },
+    { id: 'admins', label: 'Admin Management', icon: Shield }
   ]
 
   // Fetch submissions and stats
@@ -650,6 +653,8 @@ const AdminDashboard = () => {
           <BlogManagement />
         ) : activeTab === 'gallery' ? (
           <GalleryManagement />
+        ) : activeTab === 'admins' ? (
+          <AdminManagement />
         ) : activeTab === 'bookings' ? (
           <div>
             <div className="mb-6">

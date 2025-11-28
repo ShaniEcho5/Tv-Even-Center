@@ -1,16 +1,40 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import crypto from 'crypto'
+import { validateAdminCredentials } from '@/lib/supabase'
 
-// You can change these credentials
+// Super admin credentials from environment variables
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TVSEvent2024!'
+
+// Helper function to hash password using SHA256
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex')
+}
 
 export async function POST(request) {
   try {
     const { username, password } = await request.json()
 
-    // Validate credentials
+    let isValidAdmin = false
+    let adminInfo = null
+
+    // First check if it's the super admin from environment variables
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      isValidAdmin = true
+      adminInfo = { username, isSuperAdmin: true }
+    } else {
+      // Check against Supabase admins table
+      const hashedPassword = hashPassword(password)
+      const result = await validateAdminCredentials(username, hashedPassword)
+      
+      if (result.success && result.admin) {
+        isValidAdmin = true
+        adminInfo = { username: result.admin.username, isSuperAdmin: false, adminId: result.admin.id }
+      }
+    }
+
+    if (isValidAdmin) {
       // Create a simple session token
       const sessionToken = Buffer.from(`${username}:${Date.now()}`).toString('base64')
       
@@ -26,7 +50,8 @@ export async function POST(request) {
 
       return NextResponse.json({ 
         success: true, 
-        message: 'Login successful' 
+        message: 'Login successful',
+        adminInfo
       })
     } else {
       return NextResponse.json({ 

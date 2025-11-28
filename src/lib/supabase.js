@@ -322,3 +322,140 @@ export async function updateBookingPayment(bookingId, updates = {}) {
     return { success: false, error: error.message }
   }
 }
+
+// Helper function to get admin by username and validate password
+export async function validateAdminCredentials(username, passwordHash) {
+  try {
+    // Use service role key for admin operations
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    let adminSupabase = null
+    if (serviceKey) {
+      adminSupabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey)
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized')
+      adminSupabase = supabase
+    }
+
+    const { data, error } = await adminSupabase
+      .from('admins')
+      .select('*')
+      .eq('username', username)
+      .eq('password', passwordHash)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - credentials don't match
+        return { success: false, admin: null }
+      }
+      console.error('Supabase error:', error)
+      throw error
+    }
+
+    return { success: true, admin: data }
+  } catch (error) {
+    console.error('Error validating admin credentials:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Helper function to create a new admin
+export async function createAdmin(username, email, hashedPassword) {
+  try {
+    // Use service role key for admin operations
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    let adminSupabase = null
+    if (serviceKey) {
+      adminSupabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey)
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized')
+      adminSupabase = supabase
+    }
+
+    const { data, error } = await adminSupabase
+      .from('admins')
+      .insert([
+        {
+          username,
+          email,
+          password: hashedPassword
+        }
+      ])
+      .select()
+
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error creating admin:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Helper function to get all admins
+export async function getAllAdmins() {
+  try {
+    // Use service role key for admin operations
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    let adminSupabase = null
+    if (serviceKey) {
+      adminSupabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey)
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized')
+      adminSupabase = supabase
+    }
+
+    const { data, error } = await adminSupabase
+      .from('admins')
+      .select('id, username, email, createdAt')
+      .order('createdAt', { ascending: false })
+
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error fetching admins:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Helper function to delete an admin
+export async function deleteAdmin(adminId) {
+  try {
+    // Use service role key for admin operations
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    let adminSupabase = null
+    if (serviceKey) {
+      adminSupabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey)
+    } else {
+      if (!supabase) throw new Error('Supabase client not initialized')
+      adminSupabase = supabase
+    }
+
+    const { data, error } = await adminSupabase
+      .from('admins')
+      .delete()
+      .eq('id', adminId)
+      .select()
+
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error deleting admin:', error)
+    return { success: false, error: error.message }
+  }
+}

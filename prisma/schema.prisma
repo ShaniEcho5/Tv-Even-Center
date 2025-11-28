@@ -89,3 +89,14 @@ model GalleryImage {
   
   @@map("gallery_images")
 }
+
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // Hashed password
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("admins")
+}
